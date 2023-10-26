@@ -18,6 +18,10 @@
     "noFallthroughCasesInSwitch": false,
     "allowJs": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@public/*": ["./public/*"]
+    }
   }
 }

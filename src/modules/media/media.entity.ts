@@ -1,4 +1,4 @@
-import { MediaType } from '@web-template/types';
+import { MediaType } from '../../types';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

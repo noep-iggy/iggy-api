@@ -1,21 +1,21 @@
 version: '3.8'
- 
+
 networks:
- default:
-   external: false
-   name: api-postgres
- 
+  default:
+    external: false
+    name: iggy-db
+
 services:
-  api-postgres:
-   image: "postgres:13-alpine"
-   command: postgres -c 'max_connections=1000'
-   restart: always
-   container_name: api-postgres
-   environment:
-     - POSTGRES_PASSWORD=postgres
-     - POSTGRES_USER=postgres
-     - POSTGRES_DB=api-postgres_db
-   volumes:
-     - ./db_data:/var/lib/postgresql/data
-   ports:
-     - "5430:5432"
+  iggy-db:
+    image: 'postgres:13-alpine'
+    command: postgres -c 'max_connections=1000'
+    restart: always
+    container_name: iggy-db
+    environment:
+      - POSTGRES_PASSWORD=Azerty12!
+      - POSTGRES_USER=iggy-db
+      - POSTGRES_DB=iggy-db
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    ports:
+      - '5430:5432'

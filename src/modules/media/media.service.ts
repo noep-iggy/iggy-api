@@ -1,11 +1,11 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Media } from './media.entity';
 import { In, Repository } from 'typeorm';
-import { errorMessage } from '@web-template/errors';
-import { MediaDto } from '@web-template/types';
 import { User } from '../users/user.entity';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import * as fs from 'fs';
+import { errorMessage } from '@/errors';
+import { MediaDto } from '@/types';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -48,12 +48,12 @@ export class MediaService {
     }
   }
 
-  async getMediaById(_id: string): Promise<MediaDto> {
+  async getMediaById(_id: string): Promise<Media> {
     try {
       const media = await this.mediaRepository.findOneBy({
         id: _id,
       });
-      return this.formatMedia(media);
+      return media;
     } catch (e) {
       throw new BadRequestException(errorMessage.api('media').NOT_FOUND, _id);
     }

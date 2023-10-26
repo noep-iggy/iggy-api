@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcryptjs';
-import { errorMessage } from '@web-template/errors';
+import { errorMessage } from '@/errors';
 
 @Injectable()
 export class AuthValidation {

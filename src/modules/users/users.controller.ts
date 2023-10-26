@@ -8,11 +8,11 @@ import {
   Patch,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserApi } from '@web-template/types';
 import { ApiKeyGuard } from 'src/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
+import { UpdateUserApi } from '@/types';
 
 @Controller('users')
 export class UsersController {

@@ -16,8 +16,8 @@ import { extname } from 'path';
 import { v4 as uuid } from 'uuid';
 import { GetCurrentUser } from '../../decorators/get-current-user.decorator';
 import { MediaService } from '../media/media.service';
-import { errorMessage } from '@web-template/errors';
 import { User } from '../users/user.entity';
+import { errorMessage } from '@/errors';
 
 export function replaceAll(str: string, find: string, replace: string) {
   return str.replace(new RegExp(find, 'g'), replace);

@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import * as bcrypt from 'bcryptjs';
-import { AuthLoginApi, AuthRegisterApi } from '@web-template/types';
 import { UsersService } from '../users/users.service';
 import { AuthValidation } from './auth.validation';
-import { validationUser } from '@web-template/validations';
-import { errorMessage } from '@web-template/errors';
+import { errorMessage } from '@/errors';
+import { AuthLoginApi, AuthRegisterApi } from '@/types';
+import { validationUser } from '@/validations';
 
 @Injectable()
 export class AuthService {

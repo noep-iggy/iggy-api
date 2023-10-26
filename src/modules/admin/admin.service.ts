@@ -3,12 +3,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UpdateUserApi, UserDto } from '@web-template/types';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
-import { errorMessage } from '@web-template/errors';
+import { errorMessage } from '@/errors';
+import { UserDto, UpdateUserApi } from '@/types';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -62,7 +62,7 @@ export class AdminService {
     }
   }
 
-  async getUser(user: User, id: string): Promise<UserDto> {
+  async getUser(user: User, id: string): Promise<User> {
     if (user.isAdmin) {
       return await this.usersService.getUser(id);
     } else {
@@ -70,11 +70,7 @@ export class AdminService {
     }
   }
 
-  async updateUser(
-    user: User,
-    id: string,
-    body: UpdateUserApi,
-  ): Promise<UserDto> {
+  async updateUser(user: User, id: string, body: UpdateUserApi): Promise<User> {
     if (user.isAdmin) {
       return await this.usersService.updateUser(body, id);
     } else {

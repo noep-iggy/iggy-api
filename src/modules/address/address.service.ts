@@ -5,14 +5,10 @@ import {
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Address } from './address.entity';
-import {
-  AddressDto,
-  CreateAddressApi,
-  UpdateAddressApi,
-} from '@web-template/types';
-import { validationAddress } from '@web-template/validations';
-import { errorMessage } from '@web-template/errors';
 import { InjectRepository } from '@nestjs/typeorm';
+import { errorMessage } from '@/errors';
+import { AddressDto, CreateAddressApi, UpdateAddressApi } from '@/types';
+import { validationAddress } from '@/validations';
 @Injectable()
 export class AddressService {
   constructor(

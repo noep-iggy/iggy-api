@@ -4,17 +4,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  AuthRegisterApi,
-  CreateAddressApi,
-  UpdateUserApi,
-  UserDto,
-} from '@web-template/types';
 import { Repository } from 'typeorm';
 import { AddressService } from '../address/address.service';
 import { User } from './user.entity';
-import { validationUser } from '@web-template/validations';
-import { errorMessage } from '@web-template/errors';
+import { validationUser } from '@/validations';
+import { errorMessage } from '@/errors';
+import {
+  UserDto,
+  AuthRegisterApi,
+  UpdateUserApi,
+  CreateAddressApi,
+} from '@/types';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -32,8 +32,10 @@ export class UsersService {
       firstName: user.firstName,
       email: user.email,
       isAdmin: user.isAdmin,
-      address: user.address,
-      profilePicture: user.profilePicture,
+      address: user.address ?? undefined,
+      profilePicture: user.profilePicture
+        ? this.mediaService.formatMedia(user.profilePicture)
+        : undefined,
     };
   }
 
@@ -54,14 +56,10 @@ export class UsersService {
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
-    try {
-      const user = await this.usersRepository.findOne({
-        where: [{ email }],
-      });
-      return user;
-    } catch (error) {
-      throw new NotFoundException(errorMessage.api('user').NOT_FOUND, email);
-    }
+    const user = await this.usersRepository.findOne({
+      where: [{ email }],
+    });
+    return user;
   }
 
   async createUser(body: AuthRegisterApi): Promise<User> {

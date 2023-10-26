@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { ApiKeyGuard } from '../../decorators/api-key.decorator';
-import { AuthLoginApi, AuthRegisterApi } from '@web-template/types';
 import { AuthService } from './auth.service';
+import { AuthLoginApi, AuthRegisterApi } from '@/types';
 
 @Controller('auth')
 export class AuthController {

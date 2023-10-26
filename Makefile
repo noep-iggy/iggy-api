@@ -24,10 +24,10 @@ db.delete: ## Delete database
 	docker-compose down && rm -rf ./db_data && rm -rf ./src/migrations
 
 db.start: ## Start database
-	docker start api-postgres
+	docker start iggy-db
 	
 db.stop: ## Stop database
-	docker stop api-postgres
+	docker stop iggy-db
 
 #-- TYPEORM
 module.create: ## Create module
@@ -39,15 +39,15 @@ module.create: ## Create module
 	nest g controller modules/$$name --no-spec; \
 	touch ./src/modules/$$name/$$name.entity.ts; \
 	echo "import { Entity, PrimaryGeneratedColumn } from 'typeorm';\n\n@Entity()\nexport class $${upperName} {\n	@PrimaryGeneratedColumn('uuid')\n	id: string;\n}" >> ./src/modules/$$name/$$name.entity.ts; \
-	touch ./@web-template/types/api/$$upperName.ts; \
-	echo "export interface Create$${upperName}Api {}\n\nexport interface Update$${upperName}Api {}" >> ./@web-template/types/api/$$upperName.ts; \
-	echo "export * from './$${upperName}';" >> ./@web-template/types/api/index.ts; \
-	touch ./@web-template/types/dto/$$upperName.ts; \
-	echo "export interface $${upperName}Dto {}" >> ./@web-template/types/dto/$$upperName.ts; \
-	echo "export * from './$${upperName}';" >> ./@web-template/types/dto/index.ts; \
-	touch ./@web-template/validations/$$name.ts; \
-	echo "import { Create$${upperName}Api, Update$${upperName}Api } from '@web-template/types';\nimport * as yup from 'yup';\n\nconst create = yup.object<Create$${upperName}Api>().shape({});\n\nconst update = yup.object<Update$${upperName}Api>().shape({});\n\nexport const $${name}Validation = {\n  create,\n  update,\n};" >> ./@web-template/validations/$$name.ts; \
-	echo "export * from './$${name}';" >> ./@web-template/validations/index.ts; \
+	touch ./@/types/api/$$upperName.ts; \
+	echo "export interface Create$${upperName}Api {}\n\nexport interface Update$${upperName}Api {}" >> ./@/types/api/$$upperName.ts; \
+	echo "export * from './$${upperName}';" >> ./@/types/api/index.ts; \
+	touch ./@/types/dto/$$upperName.ts; \
+	echo "export interface $${upperName}Dto {}" >> ./@/types/dto/$$upperName.ts; \
+	echo "export * from './$${upperName}';" >> ./@/types/dto/index.ts; \
+	touch ./@/validations/$$name.ts; \
+	echo "import { Create$${upperName}Api, Update$${upperName}Api } from '@/types';\nimport * as yup from 'yup';\n\nconst create = yup.object<Create$${upperName}Api>().shape({});\n\nconst update = yup.object<Update$${upperName}Api>().shape({});\n\nexport const $${name}Validation = {\n  create,\n  update,\n};" >> ./@/validations/$$name.ts; \
+	echo "export * from './$${name}';" >> ./@/validations/index.ts; \
 
 #-- MIGRATION
 migration: ## Generate migration and push on server
