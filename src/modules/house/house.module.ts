@@ -11,12 +11,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { House } from './house.entity';
 import { UserModule } from '../user/user.module';
+import { JoinCodeModule } from '../join-code/join-code.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([House]),
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
+    forwardRef(() => JoinCodeModule),
   ],
   providers: [HouseService],
   controllers: [HouseController],

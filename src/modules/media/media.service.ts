@@ -17,7 +17,8 @@ export class MediaService {
     private fileUploadService: FileUploadService,
   ) {}
 
-  formatMedia(media: Media): MediaDto {
+  formatMedia(media?: Media): MediaDto {
+    if (!media) return;
     return {
       ...media,
     };

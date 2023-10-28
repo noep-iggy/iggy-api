@@ -5,20 +5,23 @@ import { CreateHouseApi, HouseDto } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { User } from '../user/user.entity';
 import { errorMessage } from '@/errors';
+import { JoinCodeService } from '../join-code/join-code.service';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class HouseService {
   constructor(
     @InjectRepository(House) private houseRepository: Repository<House>,
+    private readonly joinCodeService: JoinCodeService,
   ) {}
 
-  formatHouse(houseCripted: House): HouseDto {
+  formatHouse(houseCripted?: House): HouseDto {
+    if (!houseCripted) return;
     const house = decryptObject(houseCripted);
-
     return {
       ...house,
-      users: house.users ? house.users.map((user) => user.id) : undefined,
+      users: house?.users ? house.users.map((user) => user.id) : undefined,
+      joinCodes: this.joinCodeService.formatJoinCode(house?.joinCodes),
     };
   }
 

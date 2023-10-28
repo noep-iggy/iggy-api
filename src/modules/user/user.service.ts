@@ -22,19 +22,17 @@ export class UserService {
   ) {}
 
   formatUser(userCripted: User): UserDto {
+    if (!userCripted) return;
     const user = decryptObject(userCripted);
-    console.log('[D] user.service', user);
     return {
       id: user.id,
       userName: user.userName,
       email: user.email,
       role: user.role,
-      house: this.houseService.formatHouse(user.house),
+      house: this.houseService.formatHouse(user?.house),
       updatedAt: user.updatedAt,
       createdAt: user.createdAt,
-      profilePicture: user.profilePicture
-        ? this.mediaService.formatMedia(user.profilePicture)
-        : undefined,
+      profilePicture: this.mediaService.formatMedia(user?.profilePicture),
     };
   }
 
@@ -55,20 +53,21 @@ export class UserService {
     }
   }
 
-  async findOneByEmail(email: string): Promise<User | null> {
+  async findOneByName(name: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
-      where: [{ email }],
+      where: [{ userName: name }],
     });
     return decryptObject(user);
   }
 
   async createUser(body: AuthRegisterApi): Promise<User> {
     try {
-      const { email, password, ...user } = body;
+      const { email, userName, password, ...user } = body;
       const encryptUser = encryptObject(user);
       return await this.userRepository.save({
         ...encryptUser,
         email,
+        userName,
         password,
         profilePicture: null,
       });

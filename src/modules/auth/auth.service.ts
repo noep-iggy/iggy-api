@@ -8,8 +8,7 @@ import * as bcrypt from 'bcryptjs';
 import { UserService } from '../user/user.service';
 import { AuthValidation } from './auth.validation';
 import { errorMessage } from '@/errors';
-import { AuthLoginApi, AuthRegisterApi } from '@/types';
-import { userValidation } from '@/validations';
+import { AuthJoinApi, AuthLoginApi, AuthRegisterApi } from '@/types';
 
 @Injectable()
 export class AuthService {
@@ -20,45 +19,43 @@ export class AuthService {
   ) {}
 
   async login(body: AuthLoginApi) {
-    try {
-      await userValidation.login.validate(body, {
-        abortEarly: false,
-      });
-    } catch (e) {
-      throw new BadRequestException(e.errors);
-    }
-
-    const user = await this.userRepository.findOneByEmail(body.email);
+    const user = await this.userRepository.findOneByName(body.userName);
     if (!user)
       throw new NotFoundException(
         errorMessage.api('user').NOT_FOUND_OR_WRONG_PASSWORD,
       );
-    await this.authValidation.validateUser(body.email, body.password);
+    await this.authValidation.validateUser(body.userName, body.password);
     const payload = { email: user.email, id: user.id };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  async register(body: AuthRegisterApi) {
-    try {
-      await userValidation.create.validate(body, {
-        abortEarly: false,
-      });
-    } catch (e) {
-      throw new BadRequestException(e.errors);
-    }
-    const possibleUser = await this.userRepository.findOneByEmail(body.email);
-    if (possibleUser)
-      throw new BadRequestException(errorMessage.api('user').EXIST);
-    const { email, password } = body;
+  async join(body: AuthJoinApi) {
+    const { userName, password } = body;
     const encryptedPassword = await this.encryptPassword(password);
     const createdUser = await this.userRepository.createUser({
       ...body,
       password: encryptedPassword,
     });
     return {
-      access_token: await this.login({ email, password }),
+      access_token: await this.login({ userName, password }),
+      user: createdUser,
+    };
+  }
+
+  async register(body: AuthRegisterApi) {
+    const possibleUser = await this.userRepository.findOneByName(body.email);
+    if (possibleUser)
+      throw new BadRequestException(errorMessage.api('user').EXIST);
+    const { userName, password } = body;
+    const encryptedPassword = await this.encryptPassword(password);
+    const createdUser = await this.userRepository.createUser({
+      ...body,
+      password: encryptedPassword,
+    });
+    return {
+      access_token: await this.login({ userName, password }),
       user: createdUser,
     };
   }

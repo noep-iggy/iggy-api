@@ -12,6 +12,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { MediaModule } from './modules/media/media.module';
 import { HouseModule } from './modules/house/house.module';
+import { JoinCodeModule } from './modules/join-code/join-code.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { HouseModule } from './modules/house/house.module';
     FileUploadModule,
     MediaModule,
     HouseModule,
+    JoinCodeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

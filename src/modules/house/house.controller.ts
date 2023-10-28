@@ -16,12 +16,14 @@ import { CreateHouseApi } from '@/types';
 import { User } from '../user/user.entity';
 import { houseValidation } from '@/validations';
 import { UserService } from '../user/user.service';
+import { JoinCodeService } from '../join-code/join-code.service';
 
 @Controller('houses')
 export class HouseController {
   constructor(
     private readonly service: HouseService,
     private readonly userService: UserService,
+    private readonly joincodeService: JoinCodeService,
   ) {}
 
   @Post()
@@ -79,5 +81,13 @@ export class HouseController {
   async getUsers(@GetCurrentUser() user: User) {
     const users = await this.userService.findUsersByHouseId(user.house.id);
     return users.map((user) => this.userService.formatUser(user));
+  }
+
+  @Get('me/join-codes')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getJoinCodes(@GetCurrentUser() user: User) {
+    return this.joincodeService.formatJoinCode(user.house.joinCodes);
   }
 }

@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { User } from '../user/user.entity';
+import { JoinCode } from '../join-code/join-code.entity';
 
 @Entity()
 export class House extends BaseEntity {
@@ -12,4 +13,11 @@ export class House extends BaseEntity {
 
   @OneToMany(() => User, (user) => user.house)
   users: User[];
+
+  @OneToMany(() => JoinCode, (joinCode) => joinCode.house, {
+    eager: true,
+    nullable: true,
+    cascade: true,
+  })
+  joinCodes: JoinCode[];
 }
