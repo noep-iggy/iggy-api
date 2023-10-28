@@ -1,3 +1,4 @@
 export * from './User';
-export * from './Address';
 export * from './Media';
+export * from './BaseDto';
+export * from './House';

@@ -1,38 +1,37 @@
-import { MediaService } from './../media/media.service';
+import { HouseService } from '../house/house.service';
+import { MediaService } from '../media/media.service';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { AddressService } from '../address/address.service';
 import { User } from './user.entity';
-import { validationUser } from '@/validations';
+import { userValidation } from '@/validations';
 import { errorMessage } from '@/errors';
-import {
-  UserDto,
-  AuthRegisterApi,
-  UpdateUserApi,
-  CreateAddressApi,
-} from '@/types';
+import { UserDto, AuthRegisterApi, UpdateUserApi } from '@/types';
+import { decryptObject, encryptObject } from '@/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
-    @InjectRepository(User) private usersRepository: Repository<User>,
-    private addressService: AddressService,
+    @InjectRepository(User) private userRepository: Repository<User>,
     private mediaService: MediaService,
+    private houseService: HouseService,
   ) {}
 
-  formatUser(user: User): UserDto {
+  formatUser(userCripted: User): UserDto {
+    const user = decryptObject(userCripted);
+    console.log('[D] user.service', user);
     return {
       id: user.id,
-      lastName: user.lastName,
-      firstName: user.firstName,
+      userName: user.userName,
       email: user.email,
-      isAdmin: user.isAdmin,
-      address: user.address ?? undefined,
+      role: user.role,
+      house: this.houseService.formatHouse(user.house),
+      updatedAt: user.updatedAt,
+      createdAt: user.createdAt,
       profilePicture: user.profilePicture
         ? this.mediaService.formatMedia(user.profilePicture)
         : undefined,
@@ -41,7 +40,7 @@ export class UsersService {
 
   async getUsers(): Promise<User[]> {
     try {
-      return await this.usersRepository.find();
+      return await this.userRepository.find();
     } catch (error) {
       throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
     }
@@ -49,37 +48,53 @@ export class UsersService {
 
   async getUser(_id: string): Promise<User> {
     try {
-      return await this.usersRepository.findOneBy({ id: _id });
+      const user = await this.userRepository.findOneBy({ id: _id });
+      return { ...user };
     } catch (error) {
       throw new NotFoundException(errorMessage.api('user').NOT_FOUND, _id);
     }
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
-    const user = await this.usersRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: [{ email }],
     });
-    return user;
+    return decryptObject(user);
   }
 
   async createUser(body: AuthRegisterApi): Promise<User> {
-    const addressesCreated = body.address
-      ? await this.addressService.createAddress(body.address)
-      : null;
     try {
-      return await this.usersRepository.save({
-        ...body,
-        address: addressesCreated,
+      const { email, password, ...user } = body;
+      const encryptUser = encryptObject(user);
+      return await this.userRepository.save({
+        ...encryptUser,
+        email,
+        password,
         profilePicture: null,
       });
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(errorMessage.api('user').NOT_CREATED);
+    }
+  }
+
+  async findUsersByHouseId(houseId: string): Promise<User[]> {
+    try {
+      return await this.userRepository.find({
+        where: {
+          house: {
+            id: houseId,
+          },
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
     }
   }
 
   async updateUser(body: UpdateUserApi, id: string): Promise<User> {
     try {
-      await validationUser.update.validate(body, {
+      await userValidation.update.validate(body, {
         abortEarly: false,
       });
     } catch (e) {
@@ -87,28 +102,15 @@ export class UsersService {
     }
     try {
       const user = await this.getUser(id);
-      let addressUpdated = null;
-      if (body.address) {
-        addressUpdated =
-          user.address !== null
-            ? await this.addressService.updateAddress(
-                body.address ?? user.address,
-                user.address.id,
-              )
-            : await this.addressService.createAddress(
-                body.address as CreateAddressApi,
-              );
-      }
+
       const profilePictureMedia =
         body.profilePicture &&
         (await this.mediaService.getMediaById(body.profilePicture));
 
-      await this.usersRepository.update(id, {
+      await this.userRepository.update(id, {
         ...user,
         email: body.email ?? user.email,
-        lastName: body.lastName ?? user.lastName,
-        firstName: body.firstName ?? user.firstName,
-        address: addressUpdated ?? user.address,
+        userName: body.userName ?? user.userName,
         profilePicture: profilePictureMedia ?? user.profilePicture,
       });
 
@@ -124,8 +126,7 @@ export class UsersService {
   async deleteUser(id: string): Promise<void> {
     try {
       const user = await this.getUser(id);
-      await this.addressService.deleteAddress(user.address.id);
-      await this.usersRepository.delete(user.id);
+      await this.userRepository.delete(user.id);
     } catch (error) {
       throw new BadRequestException(errorMessage.api('user').NOT_FOUND, id);
     }

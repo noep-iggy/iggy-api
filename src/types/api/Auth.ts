@@ -1,11 +1,10 @@
-import { CreateAddressApi } from './Address';
+import { UserRoleEnum } from '../dto';
 
 export interface AuthRegisterApi {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  address?: CreateAddressApi;
+  userName: string;
+  role: UserRoleEnum;
 }
 
 export interface AuthLoginApi {

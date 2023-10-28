@@ -27,7 +27,7 @@ const password = yup
   .matches(/[!@#$%^&*]/, errorMessage.fields('password').NO_SPECIAL_CHARACTER)
   .matches(/^[^\s]*$/, errorMessage.fields('password').HAS_SPACES);
 
-export const validationGenerics = {
+export const genericsValidation = {
   email,
   password,
   optionalObject,

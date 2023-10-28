@@ -16,7 +16,7 @@ import { extname } from 'path';
 import { v4 as uuid } from 'uuid';
 import { GetCurrentUser } from '../../decorators/get-current-user.decorator';
 import { MediaService } from '../media/media.service';
-import { User } from '../users/user.entity';
+import { User } from '../user/user.entity';
 import { errorMessage } from '@/errors';
 
 export function replaceAll(str: string, find: string, replace: string) {

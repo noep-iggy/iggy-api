@@ -1,8 +1,9 @@
 import { MediaType } from '../../types';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity } from '../base.entity';
 
 @Entity()
-export class Media {
+export class Media extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

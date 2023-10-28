@@ -1,21 +1,21 @@
 import { errorMessage } from '@/errors';
-import { UpdateUserApi, AuthRegisterApi, AuthLoginApi } from '@/types';
-import { validationGenerics } from './generics';
+import {
+  UpdateUserApi,
+  AuthRegisterApi,
+  AuthLoginApi,
+  UserRoleEnum,
+} from '@/types';
+import { genericsValidation } from './generics';
 import * as yup from 'yup';
 
 const update: yup.ObjectSchema<UpdateUserApi> = yup.object({
-  email: validationGenerics.email
+  email: genericsValidation.email
     .min(1, errorMessage.fields('email').REQUIRED)
     .optional()
     .default(undefined),
-  firstName: yup
+  userName: yup
     .string()
     .min(1, errorMessage.fields('firstName').REQUIRED)
-    .optional()
-    .default(undefined),
-  lastName: yup
-    .string()
-    .min(1, errorMessage.fields('lastName').REQUIRED)
     .optional()
     .default(undefined),
   profilePicture: yup
@@ -23,49 +23,36 @@ const update: yup.ObjectSchema<UpdateUserApi> = yup.object({
     .min(1, errorMessage.fields('profilePicture').REQUIRED)
     .optional()
     .default(undefined),
-  address: yup
-    .object({
-      street: yup.string().optional().default(undefined),
-      city: yup.string().optional().default(undefined),
-      zipCode: yup.string().optional().default(undefined),
-      country: yup.string().optional().default(undefined),
-    })
+  role: yup
+    .mixed<UserRoleEnum>()
+    .oneOf(Object.values(UserRoleEnum))
     .optional()
     .default(undefined),
 });
 
 const create: yup.ObjectSchema<AuthRegisterApi> = yup.object({
-  email: validationGenerics.email.required(
+  email: genericsValidation.email.required(
     errorMessage.fields('email').REQUIRED,
   ),
-  password: validationGenerics.password,
-  lastName: yup
+  password: genericsValidation.password,
+  userName: yup
     .string()
-    .required(errorMessage.fields('lastName').REQUIRED)
-    .typeError(errorMessage.fields('lastName').NOT_STRING),
-  firstName: yup
-    .string()
-    .required(errorMessage.fields('firstName').REQUIRED)
-    .typeError(errorMessage.fields('firstName').NOT_STRING),
-  address: yup
-    .object({
-      street: yup.string().optional().default(undefined),
-      city: yup.string().optional().default(undefined),
-      zipCode: yup.string().optional().default(undefined),
-      country: yup.string().optional().default(undefined),
-    })
-    .optional()
-    .default(undefined),
+    .required(errorMessage.fields('userName').REQUIRED)
+    .typeError(errorMessage.fields('userName').NOT_STRING),
+  role: yup
+    .mixed<UserRoleEnum>()
+    .oneOf(Object.values(UserRoleEnum), errorMessage.fields('role').NOT_VALID)
+    .required(errorMessage.fields('role').REQUIRED),
 });
 
 const login = yup.object<AuthLoginApi>().shape({
-  email: validationGenerics.email.required(
+  email: genericsValidation.email.required(
     errorMessage.fields('email').REQUIRED,
   ),
-  password: validationGenerics.password,
+  password: genericsValidation.password,
 });
 
-export const validationUser = {
+export const userValidation = {
   update,
   login,
   create,

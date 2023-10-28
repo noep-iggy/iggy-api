@@ -5,26 +5,26 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersService } from './users.service';
-import { UsersController } from './users.controller';
+import { UserService } from './user.service';
+import { UserController } from './user.controller';
 import { User } from './user.entity';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
-import { AddressModule } from '../address/address.module';
 import { MediaModule } from '../media/media.module';
+import { HouseModule } from '../house/house.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    forwardRef(() => AddressModule),
     forwardRef(() => AuthModule),
     forwardRef(() => MediaModule),
+    forwardRef(() => HouseModule),
   ],
-  providers: [UsersService],
-  controllers: [UsersController],
-  exports: [UsersService],
+  providers: [UserService],
+  controllers: [UserController],
+  exports: [UserService],
 })
-export class UsersModule {
+export class UserModule {
   public configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)

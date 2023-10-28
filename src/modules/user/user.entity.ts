@@ -4,20 +4,20 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
-import { Address } from '../address/address.entity';
 import { Media } from '../media/media.entity';
+import { UserRoleEnum } from '../../types';
+import { BaseEntity } from '../base.entity';
+import { House } from '../house/house.entity';
 
 @Entity()
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 25 })
-  lastName: string;
-
-  @Column({ length: 25 })
-  firstName: string;
+  @Column()
+  userName: string;
 
   @Column({})
   email: string;
@@ -25,14 +25,17 @@ export class User {
   @Column({})
   password: string;
 
-  @Column({ default: false })
-  isAdmin: boolean;
-
-  @OneToOne(() => Address, { cascade: true, eager: true, nullable: true })
-  @JoinColumn()
-  address: Address;
+  @Column()
+  role: UserRoleEnum;
 
   @OneToOne(() => Media, { cascade: true, eager: true, nullable: true })
   @JoinColumn()
   profilePicture: Media;
+
+  @ManyToOne(() => House, (house) => house.users, {
+    eager: true,
+    nullable: true,
+    cascade: true,
+  })
+  house: House;
 }

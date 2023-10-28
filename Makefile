@@ -38,16 +38,16 @@ module.create: ## Create module
 	nest g service modules/$$name --no-spec; \
 	nest g controller modules/$$name --no-spec; \
 	touch ./src/modules/$$name/$$name.entity.ts; \
-	echo "import { Entity, PrimaryGeneratedColumn } from 'typeorm';\n\n@Entity()\nexport class $${upperName} {\n	@PrimaryGeneratedColumn('uuid')\n	id: string;\n}" >> ./src/modules/$$name/$$name.entity.ts; \
-	touch ./@/types/api/$$upperName.ts; \
-	echo "export interface Create$${upperName}Api {}\n\nexport interface Update$${upperName}Api {}" >> ./@/types/api/$$upperName.ts; \
-	echo "export * from './$${upperName}';" >> ./@/types/api/index.ts; \
-	touch ./@/types/dto/$$upperName.ts; \
-	echo "export interface $${upperName}Dto {}" >> ./@/types/dto/$$upperName.ts; \
-	echo "export * from './$${upperName}';" >> ./@/types/dto/index.ts; \
-	touch ./@/validations/$$name.ts; \
-	echo "import { Create$${upperName}Api, Update$${upperName}Api } from '@/types';\nimport * as yup from 'yup';\n\nconst create = yup.object<Create$${upperName}Api>().shape({});\n\nconst update = yup.object<Update$${upperName}Api>().shape({});\n\nexport const $${name}Validation = {\n  create,\n  update,\n};" >> ./@/validations/$$name.ts; \
-	echo "export * from './$${name}';" >> ./@/validations/index.ts; \
+	echo "import { Entity, PrimaryGeneratedColumn } from 'typeorm';\nimport { BaseEntity } from '../base.entity';\n\n@Entity()\nexport class $${upperName} extends BaseEntity {\n	@PrimaryGeneratedColumn('uuid')\n	id: string;\n}" >> ./src/modules/$$name/$$name.entity.ts; \
+	touch ./src/types/api/$$upperName.ts; \
+	echo "export interface Create$${upperName}Api {}\n\nexport interface Update$${upperName}Api {}" >> ./src/types/api/$$upperName.ts; \
+	echo "export * from './$${upperName}';" >> ./src/types/api/index.ts; \
+	touch ./src/types/dto/$$upperName.ts; \
+	echo "import { BaseDto } from './BaseDto';\n\nexport interface $${upperName}Dto extends BaseDto {}" >> ./src/types/dto/$$upperName.ts; \
+	echo "export * from './$${upperName}';" >> ./src/types/dto/index.ts; \
+	touch ./src/validations/$$name.ts; \
+	echo "import { Create$${upperName}Api, Update$${upperName}Api } from 'src/types';\nimport * as yup from 'yup';\n\nconst create: yup.ObjectSchema<Create$${upperName}Api> = yup.object({});\n\nconst update: yup.ObjectSchema<Update$${upperName}Api> = yup.object({});\n\nexport const $${name}Validation = {\n  create,\n  update,\n};" >> ./src/validations/$$name.ts; \
+	echo "export * from './$${name}';" >> ./src/validations/index.ts; \
 
 #-- MIGRATION
 migration: ## Generate migration and push on server

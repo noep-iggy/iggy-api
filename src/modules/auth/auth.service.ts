@@ -5,28 +5,29 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import * as bcrypt from 'bcryptjs';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import { AuthValidation } from './auth.validation';
 import { errorMessage } from '@/errors';
 import { AuthLoginApi, AuthRegisterApi } from '@/types';
-import { validationUser } from '@/validations';
+import { userValidation } from '@/validations';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userRepository: UsersService,
+    private userRepository: UserService,
     private authValidation: AuthValidation,
     private jwtService: JwtService,
   ) {}
 
   async login(body: AuthLoginApi) {
     try {
-      await validationUser.login.validate(body, {
+      await userValidation.login.validate(body, {
         abortEarly: false,
       });
     } catch (e) {
       throw new BadRequestException(e.errors);
     }
+
     const user = await this.userRepository.findOneByEmail(body.email);
     if (!user)
       throw new NotFoundException(
@@ -41,7 +42,7 @@ export class AuthService {
 
   async register(body: AuthRegisterApi) {
     try {
-      await validationUser.create.validate(body, {
+      await userValidation.create.validate(body, {
         abortEarly: false,
       });
     } catch (e) {

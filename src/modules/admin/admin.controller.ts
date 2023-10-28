@@ -12,7 +12,7 @@ import { AdminService } from './admin.service';
 import { ApiKeyGuard } from 'src/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
-import { User } from '../users/user.entity';
+import { User } from '../user/user.entity';
 
 @Controller('admin')
 export class AdminController {

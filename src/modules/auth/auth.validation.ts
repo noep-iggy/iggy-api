@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
 import { errorMessage } from '@/errors';
 
 @Injectable()
 export class AuthValidation {
-  constructor(private userRepository: UsersService) {}
+  constructor(private userRepository: UserService) {}
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userRepository.findOneByEmail(email);

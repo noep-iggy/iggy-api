@@ -6,12 +6,12 @@ import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { UsersModule } from './modules/users/users.module';
+import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AdminModule } from './modules/admin/admin.module';
-import { AddressModule } from './modules/address/address.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { MediaModule } from './modules/media/media.module';
+import { HouseModule } from './modules/house/house.module';
 
 @Module({
   imports: [
@@ -31,12 +31,12 @@ import { MediaModule } from './modules/media/media.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
-    UsersModule,
+    UserModule,
     AuthModule,
     AdminModule,
-    AddressModule,
     FileUploadModule,
     MediaModule,
+    HouseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

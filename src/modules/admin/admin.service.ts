@@ -5,27 +5,26 @@ import {
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
-import { User } from '../users/user.entity';
-import { UsersService } from '../users/users.service';
+import { User } from '../user/user.entity';
+import { UserService } from '../user/user.service';
 import { errorMessage } from '@/errors';
-import { UserDto, UpdateUserApi } from '@/types';
+import { UserDto, UpdateUserApi, UserRoleEnum } from '@/types';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectRepository(User) private adminRepository: Repository<User>,
-    private usersService: UsersService,
+    private usersService: UserService,
     private authService: AuthService,
   ) {}
 
   async loadAdmin() {
     const adminBody = {
-      firstName: 'admin',
-      lastName: 'admin',
+      userName: 'admin',
       email: 'admin@gmail.com',
       password: 'Azerty123!',
-      isAdmin: true,
+      role: UserRoleEnum.ADMIN,
     };
     try {
       const admin = await this.adminRepository.findOne({
@@ -43,7 +42,7 @@ export class AdminService {
   }
 
   async toggleAdminStatus(user: User, id: string): Promise<UserDto> {
-    if (user.isAdmin) {
+    if (user.role === UserRoleEnum.ADMIN) {
       if (user.id === id)
         throw new BadRequestException(
           errorMessage.api('admin').CANNOT_CHANGE_OWN_STATUS,
@@ -51,7 +50,7 @@ export class AdminService {
       try {
         const newAdmin = await this.usersService.getUser(id);
         const updatedUser = await this.adminRepository.update(newAdmin.id, {
-          isAdmin: !newAdmin.isAdmin,
+          role: UserRoleEnum.CHILD,
         });
         return updatedUser.raw;
       } catch (error) {
@@ -63,7 +62,7 @@ export class AdminService {
   }
 
   async getUser(user: User, id: string): Promise<User> {
-    if (user.isAdmin) {
+    if (user.role === UserRoleEnum.ADMIN) {
       return await this.usersService.getUser(id);
     } else {
       throw new UnauthorizedException(errorMessage.api('admin').NOT_ADMIN);
@@ -71,7 +70,7 @@ export class AdminService {
   }
 
   async updateUser(user: User, id: string, body: UpdateUserApi): Promise<User> {
-    if (user.isAdmin) {
+    if (user.role === UserRoleEnum.ADMIN) {
       return await this.usersService.updateUser(body, id);
     } else {
       throw new UnauthorizedException(errorMessage.api('admin').NOT_ADMIN);
@@ -79,7 +78,7 @@ export class AdminService {
   }
 
   async deleteUser(user: User, id: string): Promise<void> {
-    if (user.isAdmin) {
+    if (user.role === UserRoleEnum.ADMIN) {
       return await this.usersService.deleteUser(id);
     } else {
       throw new UnauthorizedException(errorMessage.api('admin').NOT_ADMIN);

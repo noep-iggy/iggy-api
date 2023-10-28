@@ -1,12 +1,17 @@
-import { AddressDto } from './Address';
+import { BaseDto } from './BaseDto';
+import { HouseDto } from './House';
 import { MediaDto } from './Media';
 
-export interface UserDto {
-  id: string;
-  firstName: string;
-  lastName: string;
+export enum UserRoleEnum {
+  PARENT = 'PARENT',
+  CHILD = 'CHILD',
+  ADMIN = 'ADMIN',
+}
+
+export interface UserDto extends BaseDto {
+  userName: string;
   email: string;
-  isAdmin: boolean;
-  address: AddressDto;
+  role: UserRoleEnum;
   profilePicture?: MediaDto;
+  house?: HouseDto;
 }

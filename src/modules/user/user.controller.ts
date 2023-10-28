@@ -7,16 +7,16 @@ import {
   HttpCode,
   Patch,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 import { ApiKeyGuard } from 'src/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
-import { UpdateUserApi } from '@/types';
+import { UpdateUserApi, UserDto } from '@/types';
 
 @Controller('users')
-export class UsersController {
-  constructor(private service: UsersService) {}
+export class UserController {
+  constructor(private service: UserService) {}
 
   @Get()
   @HttpCode(200)
@@ -31,7 +31,7 @@ export class UsersController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  me(@GetCurrentUser() user: User) {
+  me(@GetCurrentUser() user: User): UserDto {
     return this.service.formatUser(user);
   }
 
@@ -39,7 +39,10 @@ export class UsersController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async update(@Body() body: UpdateUserApi, @GetCurrentUser() user: User) {
+  async update(
+    @Body() body: UpdateUserApi,
+    @GetCurrentUser() user: User,
+  ): Promise<UserDto> {
     const userUpdated = await this.service.updateUser(body, user.id);
     return this.service.formatUser(userUpdated);
   }
@@ -48,7 +51,7 @@ export class UsersController {
   @HttpCode(204)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  deleteUser(@GetCurrentUser() user: User) {
-    return this.service.deleteUser(user.id);
+  deleteUser(@GetCurrentUser() user: User): void {
+    this.service.deleteUser(user.id);
   }
 }

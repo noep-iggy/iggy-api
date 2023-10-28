@@ -4,31 +4,31 @@ import {
   RequestMethod,
   forwardRef,
 } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { AdminController } from './admin.controller';
+import { HouseService } from './house.service';
+import { HouseController } from './house.controller';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../user/user.entity';
 import { AuthModule } from '../auth/auth.module';
+import { House } from './house.entity';
 import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    UserModule,
-    AuthModule,
+    TypeOrmModule.forFeature([House]),
     forwardRef(() => AuthModule),
+    forwardRef(() => UserModule),
   ],
-  providers: [AdminService],
-  controllers: [AdminController],
+  providers: [HouseService],
+  controllers: [HouseController],
+  exports: [HouseService],
 })
-export class AdminModule {
+export class HouseModule {
   public configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/admin', method: RequestMethod.ALL },
-        { path: '/admin/*', method: RequestMethod.ALL },
+        { path: '/houses', method: RequestMethod.ALL },
+        { path: '/houses/*', method: RequestMethod.ALL },
       );
   }
 }

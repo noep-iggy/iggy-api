@@ -25,6 +25,7 @@ const api = (item: string) => ({
   INVALID_FORMAT: `api.${item}.invalidFormat`,
   NOT_DELETED: `api.${item}.notDeleted`,
   UNDEFINED: `api.${item}.undefined`,
+  ALREADY_CREATED: `api.${item}.alreadyCreated`,
 });
 
 export const errorMessage = {

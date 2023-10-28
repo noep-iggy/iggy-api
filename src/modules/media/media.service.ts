@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Media } from './media.entity';
 import { In, Repository } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../user/user.entity';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import * as fs from 'fs';
 import { errorMessage } from '@/errors';
@@ -19,11 +19,7 @@ export class MediaService {
 
   formatMedia(media: Media): MediaDto {
     return {
-      id: media.id,
-      url: media.url,
-      type: media.type,
-      filename: media.filename,
-      size: media.size,
+      ...media,
     };
   }
 
