@@ -18,5 +18,13 @@ export interface UpdateTaskApi {
   date?: Date;
   userIds?: string[];
   animalIds?: string[];
-  picture?: string;
+  pictureId?: string;
+}
+
+export interface CheckTaskApi {
+  pictureId: string;
+}
+
+export interface RefuseTaskAPi {
+  message: string;
 }

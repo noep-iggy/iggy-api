@@ -12,6 +12,7 @@ import { UserModule } from '../user/user.module';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { Task } from './task.entity';
 import { AnimalModule } from '../animal/animal.module';
+import { MediaModule } from '../media/media.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AnimalModule } from '../animal/animal.module';
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
     forwardRef(() => AnimalModule),
+    forwardRef(() => MediaModule),
   ],
   providers: [TaskService],
   controllers: [TaskController],

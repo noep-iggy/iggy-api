@@ -5,7 +5,7 @@ import { User } from '../user/user.entity';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import * as fs from 'fs';
 import { errorMessage } from '@/errors';
-import { MediaDto } from '@/types';
+import { MediaDto, MediaType } from '@/types';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -20,7 +20,13 @@ export class MediaService {
   formatMedia(media?: Media): MediaDto {
     if (!media) return;
     return {
-      ...media,
+      id: media.id,
+      url: media.url,
+      filename: media.filename,
+      type: media.type,
+      size: media.size,
+      createdAt: media.createdAt,
+      updatedAt: media.updatedAt,
     };
   }
 
@@ -101,6 +107,21 @@ export class MediaService {
       return this.formatMedia(media);
     } catch (e) {
       throw new BadRequestException(errorMessage.api('media').NOT_CREATED);
+    }
+  }
+
+  async populateMedias(): Promise<MediaDto> {
+    try {
+      const media = {
+        url: `${process.env.API_URL}/files/1.jpg`,
+        localPath: `${process.env.FILES_PATH}/1.jpg`,
+        filename: '1.jpg',
+        type: MediaType.IMAGE,
+        size: 0,
+      };
+      return await this.mediaRepository.save(media);
+    } catch (e) {
+      throw new BadRequestException(errorMessage.api('media').NOT_FOUND);
     }
   }
 

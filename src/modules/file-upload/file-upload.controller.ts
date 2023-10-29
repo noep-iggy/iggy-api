@@ -3,6 +3,7 @@
 import {
   BadRequestException,
   Controller,
+  Get,
   HttpCode,
   Inject,
   Post,
@@ -68,5 +69,11 @@ export class FileUploadController {
     @GetCurrentUser() user: User,
   ) {
     return await this.mediaService.createMedia(file, user);
+  }
+
+  @Get('/populate')
+  @HttpCode(200)
+  async test() {
+    return await this.mediaService.populateMedias();
   }
 }

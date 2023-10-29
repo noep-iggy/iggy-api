@@ -3,7 +3,7 @@ import { MediaDto } from './Media';
 
 export enum TaskStatusEnum {
   TODO = 'TODO',
-  REJECTED = 'REJECTED',
+  TO_VALIDATE = 'TO_VALIDATE',
   DONE = 'DONE',
 }
 

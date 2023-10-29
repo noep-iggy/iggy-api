@@ -96,7 +96,7 @@ const update: yup.ObjectSchema<UpdateTaskApi> = yup.object({
     .min(1, errorMessage.fields('animalIds').REQUIRED)
     .optional()
     .default(undefined),
-  picture: yup
+  pictureId: yup
     .string()
     .min(1, errorMessage.fields('profilePicture').REQUIRED)
     .optional()

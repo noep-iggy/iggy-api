@@ -77,6 +77,27 @@ export class AnimalService {
     }
   }
 
+  async updateAnimalsStatus(
+    status: AnimalStatusEnum,
+    animals: Animal[],
+  ): Promise<Animal[]> {
+    try {
+      const animalsUpdated = await Promise.all(
+        animals.map(async (animal) => {
+          const animalUpdated = await this.animalRepository.save({
+            ...animal,
+            status,
+            updatedAt: new Date(),
+          });
+          return animalUpdated;
+        }),
+      );
+      return animalsUpdated;
+    } catch (error) {
+      throw new BadRequestException(errorMessage.api('animal').NOT_UPDATED);
+    }
+  }
+
   async deleteAnimal(id: string): Promise<void> {
     try {
       await this.animalRepository.delete({ id });

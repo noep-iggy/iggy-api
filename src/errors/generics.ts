@@ -26,6 +26,7 @@ const api = (item: string) => ({
   NOT_DELETED: `api.${item}.notDeleted`,
   UNDEFINED: `api.${item}.undefined`,
   ALREADY_CREATED: `api.${item}.alreadyCreated`,
+  ALREADY_DONE: `api.${item}.alreadyDone`,
 });
 
 export const errorMessage = {
