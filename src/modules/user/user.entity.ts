@@ -5,11 +5,13 @@ import {
   OneToOne,
   JoinColumn,
   ManyToOne,
+  ManyToMany,
 } from 'typeorm';
 import { Media } from '../media/media.entity';
 import { UserRoleEnum } from '../../types';
 import { BaseEntity } from '../base.entity';
 import { House } from '../house/house.entity';
+import { Task } from '../task/task.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -39,4 +41,9 @@ export class User extends BaseEntity {
   })
   @JoinColumn()
   house: House;
+
+  @ManyToMany(() => Task, (task) => task.users, {
+    nullable: true,
+  })
+  tasks: Task[];
 }

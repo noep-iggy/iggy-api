@@ -12,6 +12,7 @@ import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
 import { MediaModule } from '../media/media.module';
 import { HouseModule } from '../house/house.module';
+import { TaskModule } from '../task/task.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { HouseModule } from '../house/house.module';
     forwardRef(() => AuthModule),
     forwardRef(() => MediaModule),
     forwardRef(() => HouseModule),
+    forwardRef(() => TaskModule),
   ],
   providers: [UserService],
   controllers: [UserController],

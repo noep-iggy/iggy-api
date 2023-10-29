@@ -19,6 +19,7 @@ import { UserService } from '../user/user.service';
 import { JoinCodeService } from '../join-code/join-code.service';
 import { errorMessage } from '@/errors';
 import { AnimalService } from '../animal/animal.service';
+import { TaskService } from '../task/task.service';
 
 @Controller('house')
 export class HouseController {
@@ -27,6 +28,7 @@ export class HouseController {
     private readonly userService: UserService,
     private readonly joincodeService: JoinCodeService,
     private readonly animalService: AnimalService,
+    private readonly taskService: TaskService,
   ) {}
 
   @Post()
@@ -113,8 +115,22 @@ export class HouseController {
   async getAnimals(@GetCurrentUser() user: User) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
-    return user.house.animals.map((animal) =>
-      this.animalService.formatAnimal(animal),
+    return Promise.all(
+      user.house.animals.map(async (animal) => {
+        const tasks = await this.taskService.findTasksByAnimalId(animal.id);
+        return this.animalService.formatAnimal({ ...animal, tasks });
+      }),
     );
+  }
+
+  @Get('tasks')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getTasks(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    const tasks = await this.taskService.findTaskByUserId(user.id);
+    return tasks.map((task) => this.taskService.formatTask(task));
   }
 }

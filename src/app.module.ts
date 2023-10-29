@@ -15,6 +15,7 @@ import { HouseModule } from './modules/house/house.module';
 import { JoinCodeModule } from './modules/join-code/join-code.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AnimalModule } from './modules/animal/animal.module';
+import { TaskModule } from './modules/task/task.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { AnimalModule } from './modules/animal/animal.module';
     HouseModule,
     JoinCodeModule,
     AnimalModule,
+    TaskModule,
   ],
   controllers: [AppController],
   providers: [AppService],

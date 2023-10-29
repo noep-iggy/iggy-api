@@ -2,7 +2,12 @@ import { HouseService } from './../house/house.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Animal } from './animal.entity';
-import { AnimalDto, CreateAnimalApi, UpdateAnimalApi } from '@/types';
+import {
+  AnimalDto,
+  AnimalStatusEnum,
+  CreateAnimalApi,
+  UpdateAnimalApi,
+} from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { errorMessage } from '@/errors';
 import { User } from '../user/user.entity';
@@ -20,6 +25,7 @@ export class AnimalService {
     const animal = decryptObject(animalCrypted);
     return {
       ...animal,
+      tasks: animal.tasks ? animal.tasks.map((task) => task.id) : undefined,
     };
   }
 
@@ -32,6 +38,7 @@ export class AnimalService {
       const animalUpdated = await this.animalRepository.save({
         ...encryptAnimal,
         bornDate: new Date(bornDate),
+        status: AnimalStatusEnum.NORMAL,
       });
       await this.houseService.addAnimalToHouse(animalUpdated, user.house);
       return animalUpdated;
@@ -44,6 +51,13 @@ export class AnimalService {
   async findOneByName(name: string): Promise<Animal | null> {
     const animal = await this.animalRepository.findOne({
       where: [{ name }],
+    });
+    return animal;
+  }
+
+  async findOneById(id: string): Promise<Animal | null> {
+    const animal = await this.animalRepository.findOne({
+      where: [{ id }],
     });
     return animal;
   }

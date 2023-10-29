@@ -24,4 +24,5 @@ export interface AnimalDto extends BaseDto {
   gender: AnimalGenderEnum;
   type: AnimalTypeEnum;
   status: AnimalStatusEnum;
+  tasks?: string[];
 }

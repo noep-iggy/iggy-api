@@ -13,19 +13,33 @@ import { ApiKeyGuard } from 'src/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
-import { UpdateUserApi, UserDto } from '@/types';
+import { TaskDto, UpdateUserApi, UserDto } from '@/types';
 import { userValidation } from '@/validations';
+import { TaskService } from '../task/task.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private service: UserService) {}
+  constructor(
+    private service: UserService,
+    private taskService: TaskService,
+  ) {}
 
   @Get()
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  me(@GetCurrentUser() user: User): UserDto {
-    return this.service.formatUser(user);
+  async me(@GetCurrentUser() user: User): Promise<UserDto> {
+    const tasks = await this.taskService.findTaskByUserId(user.id);
+    return this.service.formatUser({ ...user, tasks });
+  }
+
+  @Get('tasks')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getTasks(@GetCurrentUser() user: User): Promise<TaskDto[]> {
+    const tasks = await this.taskService.findTaskByUserId(user.id);
+    return tasks.map((task) => this.taskService.formatTask(task));
   }
 
   @Patch()

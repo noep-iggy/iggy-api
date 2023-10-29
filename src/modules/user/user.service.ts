@@ -27,6 +27,10 @@ export class UserService {
       id: user.id,
       userName: user.userName,
       email: user.email ?? undefined,
+      tasks:
+        user.tasks && user.tasks.length > 0
+          ? user.tasks.map((task) => task.id)
+          : undefined,
       role: user.role,
       house: this.houseService.formatHouse(user?.house),
       updatedAt: user.updatedAt,

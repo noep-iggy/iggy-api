@@ -1,11 +1,10 @@
-import { AnimalGenderEnum, AnimalTypeEnum, AnimalStatusEnum } from '../dto';
+import { AnimalGenderEnum, AnimalTypeEnum } from '../dto';
 
 export interface CreateAnimalApi {
   name: string;
   bornDate: Date;
   gender: AnimalGenderEnum;
   type: AnimalTypeEnum;
-  status: AnimalStatusEnum;
 }
 
 export interface UpdateAnimalApi {
@@ -13,5 +12,4 @@ export interface UpdateAnimalApi {
   bornDate?: Date;
   gender?: AnimalGenderEnum;
   type?: AnimalTypeEnum;
-  status?: AnimalStatusEnum;
 }

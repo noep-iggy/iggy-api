@@ -1,7 +1,6 @@
 import { errorMessage } from '@/errors';
 import {
   AnimalGenderEnum,
-  AnimalStatusEnum,
   AnimalTypeEnum,
   CreateAnimalApi,
   UpdateAnimalApi,
@@ -27,14 +26,6 @@ const create: yup.ObjectSchema<CreateAnimalApi> = yup.object({
     .oneOf(Object.values(AnimalTypeEnum), errorMessage.fields('type').NOT_VALID)
     .required(errorMessage.fields('type').REQUIRED)
     .typeError(errorMessage.fields('type').NOT_STRING),
-  status: yup
-    .mixed<AnimalStatusEnum>()
-    .oneOf(
-      Object.values(AnimalStatusEnum),
-      errorMessage.fields('status').NOT_VALID,
-    )
-    .required(errorMessage.fields('status').REQUIRED)
-    .typeError(errorMessage.fields('status').NOT_STRING),
 });
 
 const update: yup.ObjectSchema<UpdateAnimalApi> = yup.object({
@@ -46,10 +37,10 @@ const update: yup.ObjectSchema<UpdateAnimalApi> = yup.object({
     .typeError(errorMessage.fields('name').NOT_STRING),
   bornDate: yup
     .date()
-    .min(1, errorMessage.fields('name').REQUIRED)
+    .min(1, errorMessage.fields('bornDate').REQUIRED)
     .optional()
     .default(undefined)
-    .typeError(errorMessage.fields('name').NOT_STRING),
+    .typeError(errorMessage.fields('bornDate').NOT_STRING),
   gender: yup
     .mixed<AnimalGenderEnum>()
     .oneOf(
@@ -65,15 +56,6 @@ const update: yup.ObjectSchema<UpdateAnimalApi> = yup.object({
     .optional()
     .default(undefined)
     .typeError(errorMessage.fields('type').NOT_STRING),
-  status: yup
-    .mixed<AnimalStatusEnum>()
-    .oneOf(
-      Object.values(AnimalStatusEnum),
-      errorMessage.fields('status').NOT_VALID,
-    )
-    .optional()
-    .default(undefined)
-    .typeError(errorMessage.fields('status').NOT_STRING),
 });
 
 export const animalValidation = {

@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import {
   AnimalGenderEnum,
@@ -6,6 +12,7 @@ import {
   AnimalStatusEnum,
 } from '../../types';
 import { House } from '../house/house.entity';
+import { Task } from '../task/task.entity';
 
 @Entity()
 export class Animal extends BaseEntity {
@@ -31,4 +38,9 @@ export class Animal extends BaseEntity {
     nullable: true,
   })
   house: House;
+
+  @ManyToMany(() => Animal, (animal) => animal.tasks, {
+    nullable: true,
+  })
+  tasks: Task[];
 }

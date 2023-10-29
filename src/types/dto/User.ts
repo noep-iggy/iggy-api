@@ -14,4 +14,5 @@ export interface UserDto extends BaseDto {
   role: UserRoleEnum;
   profilePicture?: MediaDto;
   house?: HouseDto;
+  tasks?: string[];
 }

@@ -24,7 +24,7 @@ export class HouseService {
       users: house?.users ? house.users.map((user) => user.id) : undefined,
       joinCode: this.joinCodeService.formatJoinCode(house?.joinCode),
       animals:
-        house?.animals.length > 0
+        house?.animals && house.animals.length > 0
           ? house.animals.map((animal) => animal.id)
           : undefined,
     };
