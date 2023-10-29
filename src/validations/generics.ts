@@ -1,20 +1,6 @@
 import { errorMessage } from '@/errors';
 import * as yup from 'yup';
 
-const optionalObject = yup
-  .object()
-  .transform((value) => {
-    if (
-      value &&
-      Object.values(value).some(
-        (v) => !(v === null || v === undefined || v === ''),
-      )
-    )
-      return value;
-  })
-  .default(undefined)
-  .optional();
-
 const email = yup.string().email(errorMessage.fields('email').NOT_VALID);
 
 const password = yup
@@ -30,5 +16,4 @@ const password = yup
 export const genericsValidation = {
   email,
   password,
-  optionalObject,
 };

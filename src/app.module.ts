@@ -14,6 +14,7 @@ import { MediaModule } from './modules/media/media.module';
 import { HouseModule } from './modules/house/house.module';
 import { JoinCodeModule } from './modules/join-code/join-code.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AnimalModule } from './modules/animal/animal.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     MediaModule,
     HouseModule,
     JoinCodeModule,
+    AnimalModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -12,7 +12,7 @@ const create: yup.ObjectSchema<CreateHouseApi> = yup.object({
 const update: yup.ObjectSchema<UpdateHouseApi> = yup.object({
   name: yup
     .string()
-    .min(1, errorMessage.fields('firstName').REQUIRED)
+    .min(1, errorMessage.fields('name').REQUIRED)
     .optional()
     .default(undefined),
 });

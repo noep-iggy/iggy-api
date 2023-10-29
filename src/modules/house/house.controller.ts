@@ -18,13 +18,15 @@ import { houseValidation } from '@/validations';
 import { UserService } from '../user/user.service';
 import { JoinCodeService } from '../join-code/join-code.service';
 import { errorMessage } from '@/errors';
+import { AnimalService } from '../animal/animal.service';
 
-@Controller('houses')
+@Controller('house')
 export class HouseController {
   constructor(
     private readonly service: HouseService,
     private readonly userService: UserService,
     private readonly joincodeService: JoinCodeService,
+    private readonly animalService: AnimalService,
   ) {}
 
   @Post()
@@ -51,7 +53,7 @@ export class HouseController {
     }
   }
 
-  @Get('me')
+  @Get()
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
@@ -64,7 +66,7 @@ export class HouseController {
     return this.service.formatHouse({ ...house, users, joinCode });
   }
 
-  @Patch('me')
+  @Patch()
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
@@ -83,20 +85,36 @@ export class HouseController {
     }
   }
 
-  @Get('me/users')
+  @Get('users')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
   async getUsers(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     const users = await this.userService.findUsersByHouseId(user.house.id);
     return users.map((user) => this.userService.formatUser(user));
   }
 
-  @Get('me/join-codes')
+  @Get('join-codes')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
   async getJoinCodes(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     return this.joincodeService.formatJoinCode(user.house.joinCode);
+  }
+
+  @Get('animals')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getAnimals(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    return user.house.animals.map((animal) =>
+      this.animalService.formatAnimal(animal),
+    );
   }
 }

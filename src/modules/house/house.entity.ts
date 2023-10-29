@@ -9,6 +9,7 @@ import {
 import { BaseEntity } from '../base.entity';
 import { User } from '../user/user.entity';
 import { JoinCode } from '../join-code/join-code.entity';
+import { Animal } from '../animal/animal.entity';
 
 @Entity()
 export class House extends BaseEntity {
@@ -24,4 +25,10 @@ export class House extends BaseEntity {
   @OneToOne(() => JoinCode, { cascade: true })
   @JoinColumn()
   joinCode: JoinCode;
+
+  @OneToMany(() => Animal, (animal) => animal.house, {
+    eager: true,
+    nullable: true,
+  })
+  animals: Animal[];
 }

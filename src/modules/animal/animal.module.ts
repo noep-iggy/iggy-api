@@ -4,33 +4,33 @@ import {
   RequestMethod,
   forwardRef,
 } from '@nestjs/common';
+import { AnimalService } from './animal.service';
+import { AnimalController } from './animal.controller';
+import { Animal } from './animal.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
-import { User } from './user.entity';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
-import { MediaModule } from '../media/media.module';
 import { HouseModule } from '../house/house.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([Animal]),
     forwardRef(() => AuthModule),
-    forwardRef(() => MediaModule),
+    forwardRef(() => UserModule),
     forwardRef(() => HouseModule),
   ],
-  providers: [UserService],
-  controllers: [UserController],
-  exports: [UserService],
+  providers: [AnimalService],
+  controllers: [AnimalController],
+  exports: [AnimalService],
 })
-export class UserModule {
+export class AnimalModule {
   public configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/user', method: RequestMethod.ALL },
-        { path: '/user/*', method: RequestMethod.ALL },
+        { path: '/animals', method: RequestMethod.ALL },
+        { path: '/animals/*', method: RequestMethod.ALL },
       );
   }
 }

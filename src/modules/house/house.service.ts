@@ -6,6 +6,7 @@ import { decryptObject, encryptObject } from '@/utils';
 import { User } from '../user/user.entity';
 import { errorMessage } from '@/errors';
 import { JoinCodeService } from '../join-code/join-code.service';
+import { Animal } from '../animal/animal.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -22,6 +23,10 @@ export class HouseService {
       ...house,
       users: house?.users ? house.users.map((user) => user.id) : undefined,
       joinCode: this.joinCodeService.formatJoinCode(house?.joinCode),
+      animals:
+        house?.animals.length > 0
+          ? house.animals.map((animal) => animal.id)
+          : undefined,
     };
   }
 
@@ -61,6 +66,7 @@ export class HouseService {
       return await this.houseRepository.save({
         ...house,
         ...encryptHouse,
+        updatedAt: new Date(),
       });
     } catch (error) {
       console.log(error);
@@ -89,6 +95,18 @@ export class HouseService {
       return await this.houseRepository.save({
         ...house,
         users: [...house.users, user],
+      });
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('house').NOT_UPDATED);
+    }
+  }
+
+  async addAnimalToHouse(animal: Animal, house: House): Promise<House> {
+    try {
+      return await this.houseRepository.save({
+        ...house,
+        animals: [...house.animals, animal],
       });
     } catch (error) {
       console.log(error);

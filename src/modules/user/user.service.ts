@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { userValidation } from '@/validations';
 import { errorMessage } from '@/errors';
 import { UserDto, UpdateUserApi, UserRoleEnum, AuthRegisterApi } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
@@ -94,23 +93,22 @@ export class UserService {
 
   async updateUser(body: UpdateUserApi, id: string): Promise<User> {
     try {
-      await userValidation.update.validate(body, {
-        abortEarly: false,
-      });
-    } catch (e) {
-      throw new BadRequestException(e.errors);
-    }
-    try {
+      if (body.userName) {
+        const possibleUser = await this.findOneByName(body.userName);
+        if (possibleUser)
+          throw new BadRequestException(errorMessage.api('user').EXIST);
+      }
       const user = await this.getUser(id);
-
       const profilePictureMedia =
         body.profilePicture &&
         (await this.mediaService.getMediaById(body.profilePicture));
 
       await this.userRepository.update(id, {
         ...user,
+        role: body.role ?? user.role,
         email: body.email ?? user.email,
         userName: body.userName ?? user.userName,
+        updatedAt: new Date(),
         profilePicture: profilePictureMedia ?? user.profilePicture,
       });
 
@@ -119,7 +117,7 @@ export class UserService {
       }
       return await this.getUser(id);
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('user').NOT_UPDATED, id);
+      throw new BadRequestException(error);
     }
   }
 

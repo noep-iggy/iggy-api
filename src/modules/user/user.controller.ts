@@ -6,6 +6,7 @@ import {
   UseGuards,
   HttpCode,
   Patch,
+  BadRequestException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiKeyGuard } from 'src/decorators/api-key.decorator';
@@ -13,12 +14,13 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
 import { UpdateUserApi, UserDto } from '@/types';
+import { userValidation } from '@/validations';
 
-@Controller('users')
+@Controller('user')
 export class UserController {
   constructor(private service: UserService) {}
 
-  @Get('me')
+  @Get()
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
@@ -26,7 +28,7 @@ export class UserController {
     return this.service.formatUser(user);
   }
 
-  @Patch('me')
+  @Patch()
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
@@ -34,11 +36,18 @@ export class UserController {
     @Body() body: UpdateUserApi,
     @GetCurrentUser() user: User,
   ): Promise<UserDto> {
-    const userUpdated = await this.service.updateUser(body, user.id);
-    return this.service.formatUser(userUpdated);
+    try {
+      await userValidation.update.validate(body, {
+        abortEarly: false,
+      });
+      const userUpdated = await this.service.updateUser(body, user.id);
+      return this.service.formatUser(userUpdated);
+    } catch (e) {
+      throw new BadRequestException(e.errors);
+    }
   }
 
-  @Delete('me')
+  @Delete()
   @HttpCode(204)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()

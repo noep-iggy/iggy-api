@@ -26,7 +26,7 @@ const update: yup.ObjectSchema<UpdateUserApi> = yup.object({
     .default(undefined),
   role: yup
     .mixed<UserRoleEnum>()
-    .oneOf(Object.values(UserRoleEnum))
+    .oneOf(Object.values(UserRoleEnum), errorMessage.fields('role').NOT_VALID)
     .optional()
     .default(undefined),
   house: houseValidation.update.optional().default(undefined),

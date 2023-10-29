@@ -12,6 +12,7 @@ import { AuthModule } from '../auth/auth.module';
 import { House } from './house.entity';
 import { UserModule } from '../user/user.module';
 import { JoinCodeModule } from '../join-code/join-code.module';
+import { AnimalModule } from '../animal/animal.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { JoinCodeModule } from '../join-code/join-code.module';
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
     forwardRef(() => JoinCodeModule),
+    forwardRef(() => AnimalModule),
   ],
   providers: [HouseService],
   controllers: [HouseController],
@@ -29,8 +31,8 @@ export class HouseModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/houses', method: RequestMethod.ALL },
-        { path: '/houses/*', method: RequestMethod.ALL },
+        { path: '/house', method: RequestMethod.ALL },
+        { path: '/house/*', method: RequestMethod.ALL },
       );
   }
 }

@@ -1,0 +1,73 @@
+import { HouseService } from './../house/house.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { Animal } from './animal.entity';
+import { AnimalDto, CreateAnimalApi, UpdateAnimalApi } from '@/types';
+import { decryptObject, encryptObject } from '@/utils';
+import { errorMessage } from '@/errors';
+import { User } from '../user/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+
+@Injectable()
+export class AnimalService {
+  constructor(
+    @InjectRepository(Animal) private animalRepository: Repository<Animal>,
+    private readonly houseService: HouseService,
+  ) {}
+
+  formatAnimal(animalCrypted: Animal): AnimalDto {
+    if (!animalCrypted) return;
+    const animal = decryptObject(animalCrypted);
+    return {
+      ...animal,
+    };
+  }
+
+  async createAnimal(body: CreateAnimalApi, user: User): Promise<Animal> {
+    try {
+      const { bornDate, ...animal } = body;
+      const encryptAnimal = encryptObject({
+        ...animal,
+      });
+      const animalUpdated = await this.animalRepository.save({
+        ...encryptAnimal,
+        bornDate: new Date(bornDate),
+      });
+      await this.houseService.addAnimalToHouse(animalUpdated, user.house);
+      return animalUpdated;
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('animal').NOT_CREATED);
+    }
+  }
+
+  async findOneByName(name: string): Promise<Animal | null> {
+    const animal = await this.animalRepository.findOne({
+      where: [{ name }],
+    });
+    return animal;
+  }
+
+  async updateAnimal(body: UpdateAnimalApi, id: string): Promise<Animal> {
+    try {
+      const animal = await this.animalRepository.findOneBy({ id });
+      const encrypBody = encryptObject(body);
+      const animalUpdated = await this.animalRepository.save({
+        ...animal,
+        ...encrypBody,
+        updatedAt: new Date(),
+      });
+      return animalUpdated;
+    } catch (error) {
+      throw new BadRequestException(errorMessage.api('animal').NOT_UPDATED);
+    }
+  }
+
+  async deleteAnimal(id: string): Promise<void> {
+    try {
+      await this.animalRepository.delete({ id });
+    } catch (error) {
+      throw new BadRequestException(errorMessage.api('animal').NOT_DELETED);
+    }
+  }
+}
