@@ -14,10 +14,14 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { UserModule } from '../user/user.module';
 import { AuthValidation } from './auth.validation';
 import { PassportModule } from '@nestjs/passport';
+import { HouseModule } from '../house/house.module';
+import { JoinCodeModule } from '../join-code/join-code.module';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
+    forwardRef(() => HouseModule),
+    forwardRef(() => JoinCodeModule),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

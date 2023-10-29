@@ -37,5 +37,6 @@ export class User extends BaseEntity {
     nullable: true,
     cascade: true,
   })
+  @JoinColumn()
   house: House;
 }

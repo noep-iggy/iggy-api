@@ -17,6 +17,7 @@ import { User } from '../user/user.entity';
 import { houseValidation } from '@/validations';
 import { UserService } from '../user/user.service';
 import { JoinCodeService } from '../join-code/join-code.service';
+import { errorMessage } from '@/errors';
 
 @Controller('houses')
 export class HouseController {
@@ -38,10 +39,15 @@ export class HouseController {
       await houseValidation.create.validate(body, {
         abortEarly: false,
       });
+      if (user.house) {
+        throw new BadRequestException(
+          errorMessage.api('house').ALREADY_CREATED,
+        );
+      }
       const house = await this.service.createHouse(body, user);
       return this.service.formatHouse(house);
     } catch (e) {
-      throw new BadRequestException(e.errors);
+      throw new BadRequestException(e);
     }
   }
 
@@ -50,9 +56,12 @@ export class HouseController {
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
   async getHouse(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     const house = await this.service.getHouse(user.house.id);
     const users = await this.userService.findUsersByHouseId(house.id);
-    return this.service.formatHouse({ ...house, users });
+    const joinCode = await this.joincodeService.findJoincodeByHouseId(house.id);
+    return this.service.formatHouse({ ...house, users, joinCode });
   }
 
   @Patch('me')
@@ -88,6 +97,6 @@ export class HouseController {
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
   async getJoinCodes(@GetCurrentUser() user: User) {
-    return this.joincodeService.formatJoinCode(user.house.joinCodes);
+    return this.joincodeService.formatJoinCode(user.house.joinCode);
   }
 }

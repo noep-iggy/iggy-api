@@ -1,6 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { BaseEntity } from '../base.entity';
-import { JoincodeTypeEnum } from '../../types';
+import { JoinCodeTypeEnum } from '../../types';
 import { House } from '../house/house.entity';
 
 @Entity()
@@ -11,9 +17,13 @@ export class JoinCode extends BaseEntity {
   @Column()
   code: string;
 
-  @ManyToOne(() => House, (house) => house.joinCodes)
-  house: House;
+  @Column()
+  expirationDate: Date;
 
   @Column()
-  type: JoincodeTypeEnum;
+  type: JoinCodeTypeEnum;
+
+  @OneToOne(() => House, { cascade: true, eager: true, nullable: true })
+  @JoinColumn()
+  house: House;
 }

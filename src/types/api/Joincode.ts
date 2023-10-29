@@ -1,9 +1,9 @@
 import { House } from '@/modules/house/house.entity';
-import { JoincodeTypeEnum } from '../dto';
+import { JoinCodeTypeEnum } from '../dto';
 
 export interface CreateJoincodeApi {
   code: string;
-  type: JoincodeTypeEnum;
+  type: JoinCodeTypeEnum;
   house: House;
 }
 

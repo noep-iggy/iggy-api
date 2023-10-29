@@ -11,12 +11,14 @@ import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { JoincodeController } from './join-code.controller';
+import { HouseModule } from '../house/house.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([JoinCode]),
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
+    forwardRef(() => HouseModule),
   ],
   providers: [JoinCodeService],
   controllers: [JoincodeController],

@@ -21,7 +21,7 @@ export class HouseService {
     return {
       ...house,
       users: house?.users ? house.users.map((user) => user.id) : undefined,
-      joinCodes: this.joinCodeService.formatJoinCode(house?.joinCodes),
+      joinCode: this.joinCodeService.formatJoinCode(house?.joinCode),
     };
   }
 
@@ -43,11 +43,6 @@ export class HouseService {
 
   async createHouse(body: CreateHouseApi, user: User): Promise<House> {
     try {
-      if (user.house) {
-        throw new BadRequestException(
-          errorMessage.api('house').ALREADY_CREATED,
-        );
-      }
       const encryptHouse = encryptObject(body);
       return await this.houseRepository.save({
         ...encryptHouse,
@@ -66,6 +61,34 @@ export class HouseService {
       return await this.houseRepository.save({
         ...house,
         ...encryptHouse,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('house').NOT_UPDATED);
+    }
+  }
+
+  async findHouseByCode(code: string): Promise<House> {
+    try {
+      const house = await this.houseRepository.findOne({
+        where: {
+          joinCode: {
+            code: code,
+          },
+        },
+      });
+      return house;
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    }
+  }
+
+  async addUserToHouse(user: User, house: House): Promise<House> {
+    try {
+      return await this.houseRepository.save({
+        ...house,
+        users: [...house.users, user],
       });
     } catch (error) {
       console.log(error);

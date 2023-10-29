@@ -13,9 +13,11 @@ import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { MediaModule } from './modules/media/media.module';
 import { HouseModule } from './modules/house/house.module';
 import { JoinCodeModule } from './modules/join-code/join-code.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',

@@ -7,6 +7,7 @@ import {
 } from '@/types';
 import { genericsValidation } from './generics';
 import * as yup from 'yup';
+import { houseValidation } from './house';
 
 const update: yup.ObjectSchema<UpdateUserApi> = yup.object({
   email: genericsValidation.email
@@ -28,21 +29,16 @@ const update: yup.ObjectSchema<UpdateUserApi> = yup.object({
     .oneOf(Object.values(UserRoleEnum))
     .optional()
     .default(undefined),
+  house: houseValidation.update.optional().default(undefined),
 });
 
 const create: yup.ObjectSchema<AuthRegisterApi> = yup.object({
-  email: genericsValidation.email.required(
-    errorMessage.fields('email').REQUIRED,
-  ),
+  email: genericsValidation.email,
   password: genericsValidation.password,
   userName: yup
     .string()
     .required(errorMessage.fields('userName').REQUIRED)
     .typeError(errorMessage.fields('userName').NOT_STRING),
-  role: yup
-    .mixed<UserRoleEnum>()
-    .oneOf(Object.values(UserRoleEnum), errorMessage.fields('role').NOT_VALID)
-    .required(errorMessage.fields('role').REQUIRED),
 });
 
 const login = yup.object<AuthLoginApi>().shape({

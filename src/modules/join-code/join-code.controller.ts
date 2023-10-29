@@ -5,6 +5,7 @@ import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { User } from '../user/user.entity';
+import { JoinCodeTypeEnum } from '@/types';
 
 @Controller('join-codes')
 export class JoincodeController {
@@ -13,21 +14,36 @@ export class JoincodeController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('create')
+  @Get('create/parent')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async createJoincode(@GetCurrentUser() user: User) {
-    const joincode = await this.service.createJoincode(user.house);
+  async createJoincodeParent(@GetCurrentUser() user: User) {
+    const joincode = await this.service.createJoincode(
+      user.house,
+      JoinCodeTypeEnum.PARENT,
+    );
     return this.service.formatJoinCode(joincode);
   }
 
-  @Get('delete')
+  @Get('create/child')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async deleteJoincode(@GetCurrentUser() user: User) {
-    await this.service.deleteJoincodesByHouseId(user.house.id);
-    return { message: 'ok' };
+  async createJoincodeChild(@GetCurrentUser() user: User) {
+    const joincode = await this.service.createJoincode(
+      user.house,
+      JoinCodeTypeEnum.CHILD,
+    );
+    return this.service.formatJoinCode(joincode);
+  }
+
+  @Get('me')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getJoincode(@GetCurrentUser() user: User) {
+    const joincode = await this.service.findJoincodeByHouseId(user.house.id);
+    return this.service.formatJoinCode(joincode);
   }
 }

@@ -18,15 +18,6 @@ import { UpdateUserApi, UserDto } from '@/types';
 export class UserController {
   constructor(private service: UserService) {}
 
-  @Get()
-  @HttpCode(200)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  async getAll() {
-    const users = await this.service.getUsers();
-    return users.map((user) => this.service.formatUser(user));
-  }
-
   @Get('me')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)

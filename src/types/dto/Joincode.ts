@@ -1,9 +1,10 @@
-export enum JoincodeTypeEnum {
+export enum JoinCodeTypeEnum {
   PARENT = 'PARENT',
   CHILD = 'CHILD',
 }
 
 export interface JoinCodeDto {
-  parent: string;
-  child: string;
+  code: string;
+  expirationDate: Date;
+  type: JoinCodeTypeEnum;
 }

@@ -4,5 +4,5 @@ import { JoinCodeDto } from './Joincode';
 export interface HouseDto extends BaseDto {
   name: string;
   users: string[];
-  joinCodes: JoinCodeDto;
+  joinCode: JoinCodeDto;
 }

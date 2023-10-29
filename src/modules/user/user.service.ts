@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { userValidation } from '@/validations';
 import { errorMessage } from '@/errors';
-import { UserDto, AuthRegisterApi, UpdateUserApi } from '@/types';
+import { UserDto, UpdateUserApi, UserRoleEnum, AuthRegisterApi } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -27,7 +27,7 @@ export class UserService {
     return {
       id: user.id,
       userName: user.userName,
-      email: user.email,
+      email: user.email ?? undefined,
       role: user.role,
       house: this.houseService.formatHouse(user?.house),
       updatedAt: user.updatedAt,
@@ -53,14 +53,14 @@ export class UserService {
     }
   }
 
-  async findOneByName(name: string): Promise<User | null> {
+  async findOneByName(userName: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
-      where: [{ userName: name }],
+      where: [{ userName }],
     });
-    return decryptObject(user);
+    return user;
   }
 
-  async createUser(body: AuthRegisterApi): Promise<User> {
+  async createUser(body: AuthRegisterApi, role: UserRoleEnum): Promise<User> {
     try {
       const { email, userName, password, ...user } = body;
       const encryptUser = encryptObject(user);
@@ -69,6 +69,7 @@ export class UserService {
         email,
         userName,
         password,
+        role,
         profilePicture: null,
       });
     } catch (error) {
