@@ -11,6 +11,7 @@ import {
 import { decryptObject, encryptObject } from '@/utils';
 import { errorMessage } from '@/errors';
 import { User } from '../user/user.entity';
+import { resolverAnimalStatus } from '@/utils/animal';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -78,7 +79,7 @@ export class AnimalService {
   }
 
   async updateAnimalsStatus(
-    status: AnimalStatusEnum,
+    sens: 'upgrade' | 'downgrade',
     animals: Animal[],
   ): Promise<Animal[]> {
     try {
@@ -86,7 +87,7 @@ export class AnimalService {
         animals.map(async (animal) => {
           const animalUpdated = await this.animalRepository.save({
             ...animal,
-            status,
+            status: resolverAnimalStatus(sens, animal.status),
             updatedAt: new Date(),
           });
           return animalUpdated;

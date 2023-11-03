@@ -1,12 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { House } from './house.entity';
-import { CreateHouseApi, HouseDto } from '@/types';
+import { BillingPlanTypeEnum, CreateHouseApi, HouseDto } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { User } from '../user/user.entity';
 import { errorMessage } from '@/errors';
 import { JoinCodeService } from '../join-code/join-code.service';
 import { Animal } from '../animal/animal.entity';
+import { BillingPlanService } from '../billing-plan/billing-plan.service';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class HouseService {
   constructor(
     @InjectRepository(House) private houseRepository: Repository<House>,
     private readonly joinCodeService: JoinCodeService,
+    private readonly billingPlanService: BillingPlanService,
   ) {}
 
   formatHouse(houseCripted?: House): HouseDto {
@@ -21,6 +23,7 @@ export class HouseService {
     const house = decryptObject(houseCripted);
     return {
       ...house,
+      billingPlan: house?.billingPlan?.type,
       users: house?.users ? house.users.map((user) => user.id) : undefined,
       joinCode: this.joinCodeService.formatJoinCode(house?.joinCode),
       animals:
@@ -32,7 +35,21 @@ export class HouseService {
 
   async getHouse(_id: string): Promise<House> {
     try {
-      return await this.houseRepository.findOneBy({ id: _id });
+      return await this.houseRepository.findOne({
+        where: { id: _id },
+        relations: ['users', 'animals', 'joinCode', 'billingPlan'],
+        select: {
+          users: {
+            id: true,
+          },
+          animals: {
+            id: true,
+          },
+          billingPlan: {
+            type: true,
+          },
+        },
+      });
     } catch (error) {
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     }
@@ -49,25 +66,32 @@ export class HouseService {
   async createHouse(body: CreateHouseApi, user: User): Promise<House> {
     try {
       const encryptHouse = encryptObject(body);
-      return await this.houseRepository.save({
+      const house = await this.houseRepository.save({
         ...encryptHouse,
         users: [user],
       });
+      await this.billingPlanService.addHouseToBillingPlan(
+        BillingPlanTypeEnum.FREE,
+        house.id,
+      );
+      return house;
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('house').NOT_CREATED);
     }
   }
 
-  async updateHouse(body: CreateHouseApi, id: string): Promise<House> {
+  async updateHouse(body: House): Promise<House> {
     try {
-      const house = await this.getHouse(id);
-      const encryptHouse = encryptObject(body);
-      return await this.houseRepository.save({
-        ...house,
+      const { name } = body;
+      const encryptHouse = encryptObject({ name });
+      const house = await this.houseRepository.save({
+        ...body,
         ...encryptHouse,
         updatedAt: new Date(),
       });
+
+      return house;
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('house').NOT_UPDATED);
@@ -104,9 +128,10 @@ export class HouseService {
 
   async addAnimalToHouse(animal: Animal, house: House): Promise<House> {
     try {
+      const completeHouse = await this.getHouse(house.id);
       return await this.houseRepository.save({
         ...house,
-        animals: [...house.animals, animal],
+        animals: [...completeHouse.animals, animal],
       });
     } catch (error) {
       console.log(error);

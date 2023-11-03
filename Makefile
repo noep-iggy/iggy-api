@@ -38,7 +38,7 @@ module.create: ## Create module
 	nest g service modules/$$name --no-spec; \
 	nest g controller modules/$$name --no-spec; \
 	touch ./src/modules/$$name/$$name.entity.ts; \
-	echo "import { Entity, PrimaryGeneratedColumn } from 'typeorm';\nimport { BaseEntity } from '../base.entity';\n\n@Entity()\nexport class $${upperName} extends BaseEntity {\n	@PrimaryGeneratedColumn('uuid')\n	id: string;\n}" >> ./src/modules/$$name/$$name.entity.ts; \
+	echo "import { Entity } from 'typeorm';\nimport { BaseEntity } from '../base.entity';\n\n@Entity()\nexport class $${upperName} extends BaseEntity {}" >> ./src/modules/$$name/$$name.entity.ts; \
 	touch ./src/types/api/$$upperName.ts; \
 	echo "export interface Create$${upperName}Api {}\n\nexport interface Update$${upperName}Api {}" >> ./src/types/api/$$upperName.ts; \
 	echo "export * from './$${upperName}';" >> ./src/types/api/index.ts; \

@@ -1,4 +1,5 @@
 import { TaskRecurrenceEnum, TaskStatusEnum } from '../dto';
+import { UpdateRecurrenceApi } from './Recurrence';
 
 export interface CreateTaskApi {
   title: string;
@@ -14,7 +15,7 @@ export interface UpdateTaskApi {
   description?: string;
   status?: TaskStatusEnum;
   message?: string;
-  recurrence?: TaskRecurrenceEnum;
+  recurrence?: UpdateRecurrenceApi;
   date?: Date;
   userIds?: string[];
   animalIds?: string[];

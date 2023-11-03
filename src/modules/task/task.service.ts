@@ -1,19 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Task } from './task.entity';
-import {
-  AnimalStatusEnum,
-  CreateTaskApi,
-  TaskDto,
-  TaskStatusEnum,
-  UpdateTaskApi,
-} from '@/types';
+import { CreateTaskApi, TaskDto, TaskStatusEnum, UpdateTaskApi } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { AnimalService } from '../animal/animal.service';
 import { errorMessage } from '@/errors';
 import { UserService } from '../user/user.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MediaService } from '../media/media.service';
+import { RecurrenceService } from '../recurrence/recurrence.service';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -23,6 +18,7 @@ export class TaskService {
     private readonly animalService: AnimalService,
     private readonly userService: UserService,
     private readonly mediaService: MediaService,
+    private readonly recurrenceService: RecurrenceService,
   ) {}
 
   formatTask(taskCrypted: Task): TaskDto {
@@ -33,6 +29,7 @@ export class TaskService {
       users: task.users.map((user) => user.id),
       animals: task.animals.map((animal) => animal.id),
       picture: this.mediaService.formatMedia(task.picture),
+      recurrence: task.recurrence ? task.recurrence : undefined,
     };
   }
 
@@ -46,15 +43,21 @@ export class TaskService {
       const users = await Promise.all(
         userIds.map((userId) => this.userService.getUser(userId)),
       );
-      const taskUpdated = await this.taskRepository.save({
+      const taskCreated = await this.taskRepository.save({
         ...encryptTask,
-        recurrence,
+        recurrence: null,
         date: new Date(date),
         users,
         animals,
         status: TaskStatusEnum.TODO,
       });
-      return taskUpdated;
+      if (recurrence) {
+        await this.recurrenceService.createRecurrence(
+          { date: taskCreated.date, type: recurrence },
+          taskCreated,
+        );
+      }
+      return taskCreated;
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_CREATED);
@@ -63,7 +66,9 @@ export class TaskService {
 
   async findTasks(): Promise<Task[]> {
     try {
-      const tasks = await this.taskRepository.find();
+      const tasks = await this.taskRepository.find({
+        relations: ['users', 'animals', 'recurrence'],
+      });
       return tasks;
     } catch (error) {
       console.log(error);
@@ -75,7 +80,7 @@ export class TaskService {
     try {
       const task = await this.taskRepository.findOne({
         where: { id },
-        relations: ['users', 'animals'],
+        relations: ['users', 'animals', 'recurrence'],
       });
       return task;
     } catch (error) {
@@ -87,8 +92,24 @@ export class TaskService {
   async findTaskByUserId(userId: string): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
-        where: { users: { id: userId } },
-        relations: ['users', 'animals'],
+        where: { users: { id: userId }, status: Not(TaskStatusEnum.ARCHIVED) },
+        relations: ['users', 'animals', 'recurrence'],
+      });
+      return tasks;
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
+    }
+  }
+
+  async findTaskByStatus(
+    userId: string,
+    status: TaskStatusEnum,
+  ): Promise<Task[]> {
+    try {
+      const tasks = await this.taskRepository.find({
+        where: { users: { id: userId }, status: status },
+        relations: ['users', 'animals', 'recurrence'],
       });
       return tasks;
     } catch (error) {
@@ -110,58 +131,93 @@ export class TaskService {
     }
   }
 
+  async removeRecurrence(taskId: string): Promise<Task> {
+    try {
+      const task = await this.taskRepository.findOne({
+        where: { id: taskId },
+        relations: ['recurrence'],
+      });
+      const taskUpdated = await this.taskRepository.save({
+        ...task,
+        recurrence: null,
+        updatedAt: new Date(),
+      });
+      await this.recurrenceService.deleteRecurrence(task.recurrence.id);
+      return taskUpdated;
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('task').NOT_UPDATED);
+    }
+  }
+
   async updateTask(body: UpdateTaskApi, id: string): Promise<Task> {
     try {
       const task = await this.taskRepository.findOne({
         where: { id },
-        relations: ['users', 'animals'],
+        relations: ['users', 'animals', 'recurrence'],
       });
-      const {
-        recurrence,
-        date,
-        userIds,
-        animalIds,
-        pictureId,
-        status,
-        ...taskToCrypt
-      } = body;
-      let animals = [];
-      if (animalIds)
-        animals = await Promise.all(
-          animalIds
-            ? animalIds?.map((animalId) =>
+
+      const { date, userIds, animalIds, pictureId, status, ...taskToCrypt } =
+        body;
+
+      let recurrenceToUpdate = null;
+      if (body.recurrence) {
+        if (task.recurrence) {
+          recurrenceToUpdate = await this.recurrenceService.updateRecurrence(
+            body.recurrence,
+            task.recurrence.id,
+          );
+        } else {
+          recurrenceToUpdate = await this.recurrenceService.createRecurrence(
+            { type: body.recurrence.type, date: new Date(task.date) },
+            task,
+          );
+        }
+      }
+
+      const [animals, users, findPicture] = await Promise.all([
+        animalIds
+          ? Promise.all(
+              animalIds.map((animalId) =>
                 this.animalService.findOneById(animalId),
-              )
-            : undefined,
-        );
-      let users = [];
-      if (userIds)
-        users = await Promise.all(
-          userIds && userIds?.map((userId) => this.userService.getUser(userId)),
-        );
-      let findPicture = null;
-      if (pictureId)
-        findPicture = await this.mediaService.getMediaById(pictureId);
-      findPicture = await this.mediaService.getMediaById(pictureId);
-      const encryptTask = encryptObject(taskToCrypt);
-      const taskUpdated = await this.taskRepository.save({
-        ...task,
-        title: taskToCrypt.title ? encryptTask.title : task.title,
+              ),
+            )
+          : undefined,
+        userIds
+          ? Promise.all(
+              userIds.map((userId) => this.userService.getUser(userId)),
+            )
+          : undefined,
+        pictureId ? this.mediaService.getMediaById(pictureId) : null,
+      ]);
+
+      const updatedTaskData = {
+        title: taskToCrypt.title
+          ? encryptObject(taskToCrypt.title)
+          : task.title,
         description: taskToCrypt.description
-          ? encryptTask.description
+          ? encryptObject(taskToCrypt.description)
           : task.description,
-        recurrence: recurrence ? recurrence : task.recurrence,
+        recurrence: recurrenceToUpdate ?? task.recurrence,
         date: date ? new Date(date) : task.date,
         users: userIds ? users : task.users,
         animals: animalIds ? animals : task.animals,
-        status: status ? status : task.status,
-        message: taskToCrypt.message ? encryptTask.message : task.message,
+        status: status ?? task.status,
+        message: taskToCrypt.message
+          ? encryptObject(taskToCrypt.message)
+          : task.message,
         picture: pictureId ? findPicture : task.picture,
         updatedAt: new Date(),
+      };
+
+      const taskUpdated = await this.taskRepository.save({
+        ...task,
+        ...updatedTaskData,
       });
+
       return taskUpdated;
     } catch (error) {
-      console.log(error);
+      console.log('TASK ERROR', error);
       throw new BadRequestException(errorMessage.api('task').NOT_UPDATED);
     }
   }
@@ -187,9 +243,9 @@ export class TaskService {
     }
   }
 
-  async deleteTask(task: Task): Promise<void> {
+  async deleteTask(id: string): Promise<void> {
     try {
-      await this.taskRepository.delete({ id: task.id });
+      await this.taskRepository.delete({ id });
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_DELETED);
@@ -208,10 +264,7 @@ export class TaskService {
         updatedAt: new Date(),
         picture: undefined,
       });
-      await this.animalService.updateAnimalsStatus(
-        AnimalStatusEnum.HAPPY,
-        task.animals,
-      );
+      await this.animalService.updateAnimalsStatus('upgrade', task.animals);
       await this.mediaService.deleteMedia(task.picture.id);
       return taskUpdated;
     } catch (error) {
@@ -256,15 +309,17 @@ export class TaskService {
             task.status === TaskStatusEnum.TODO ||
             task.status === TaskStatusEnum.TO_VALIDATE
           ) {
-            await this.deleteTask(task);
             await this.animalService.updateAnimalsStatus(
-              AnimalStatusEnum.SAD,
+              'downgrade',
               task.animals,
             );
           }
-          if (task.status === TaskStatusEnum.DONE) {
-            await this.deleteTask(task);
-          }
+          await this.updateTask(
+            {
+              status: TaskStatusEnum.ARCHIVED,
+            },
+            task.id,
+          );
         }
       }),
     );

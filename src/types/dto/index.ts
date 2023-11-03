@@ -5,3 +5,5 @@ export * from './House';
 export * from './Joincode';
 export * from './Animal';
 export * from './Task';
+export * from './Recurrence';
+export * from './BillingPlan';

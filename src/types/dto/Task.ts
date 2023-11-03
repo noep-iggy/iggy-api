@@ -1,16 +1,12 @@
 import { BaseDto } from './BaseDto';
 import { MediaDto } from './Media';
+import { RecurrenceDto } from './Recurrence';
 
 export enum TaskStatusEnum {
   TODO = 'TODO',
   TO_VALIDATE = 'TO_VALIDATE',
   DONE = 'DONE',
-}
-
-export enum TaskRecurrenceEnum {
-  DAILY = 'DAILY',
-  WEEKLY = 'WEEKLY',
-  MONTHLY = 'MONTHLY',
+  ARCHIVED = 'ARCHIVED',
 }
 
 export interface TaskDto extends BaseDto {
@@ -18,7 +14,7 @@ export interface TaskDto extends BaseDto {
   description?: string;
   status: TaskStatusEnum;
   message?: string;
-  recurrence?: TaskRecurrenceEnum;
+  recurrence?: RecurrenceDto;
   date: Date;
   users: string[];
   animals: string[];

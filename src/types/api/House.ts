@@ -1,7 +1,9 @@
 export interface CreateHouseApi {
-  name?: string;
+  name: string;
 }
 
 export interface UpdateHouseApi {
   name?: string;
+  animalIds?: string[];
+  userIds?: string[];
 }

@@ -4,33 +4,33 @@ import {
   RequestMethod,
   forwardRef,
 } from '@nestjs/common';
-import { JoinCodeService } from './join-code.service';
-import { JoinCode } from './join-code.entity';
+import { BillingPlanService } from './billing-plan.service';
+import { BillingPlanController } from './billing-plan.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
+import { AuthMiddleware } from '../auth/auth.middleware';
+import { BillingPlan } from './billing-plan.entity';
 import { UserModule } from '../user/user.module';
-import { JoincodeController } from './join-code.controller';
 import { HouseModule } from '../house/house.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([JoinCode]),
+    TypeOrmModule.forFeature([BillingPlan]),
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
     forwardRef(() => HouseModule),
   ],
-  providers: [JoinCodeService],
-  controllers: [JoincodeController],
-  exports: [JoinCodeService],
+  providers: [BillingPlanService],
+  controllers: [BillingPlanController],
+  exports: [BillingPlanService],
 })
-export class JoinCodeModule {
+export class BillingPlanModule {
   public configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/join-code', method: RequestMethod.ALL },
-        { path: '/join-code/*', method: RequestMethod.ALL },
+        { path: '/billing-plans', method: RequestMethod.ALL },
+        { path: '/billing-plans/*', method: RequestMethod.ALL },
       );
   }
 }

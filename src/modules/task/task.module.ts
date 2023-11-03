@@ -13,6 +13,7 @@ import { AuthMiddleware } from '../auth/auth.middleware';
 import { Task } from './task.entity';
 import { AnimalModule } from '../animal/animal.module';
 import { MediaModule } from '../media/media.module';
+import { RecurrenceModule } from '../recurrence/recurrence.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MediaModule } from '../media/media.module';
     forwardRef(() => UserModule),
     forwardRef(() => AnimalModule),
     forwardRef(() => MediaModule),
+    forwardRef(() => RecurrenceModule),
   ],
   providers: [TaskService],
   controllers: [TaskController],

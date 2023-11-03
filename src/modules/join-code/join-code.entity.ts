@@ -1,19 +1,10 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { JoinCodeTypeEnum } from '../../types';
 import { House } from '../house/house.entity';
 
 @Entity()
 export class JoinCode extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
   @Column()
   code: string;
 

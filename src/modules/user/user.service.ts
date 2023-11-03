@@ -8,7 +8,7 @@ import {
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { errorMessage } from '@/errors';
-import { UserDto, UpdateUserApi, UserRoleEnum, AuthRegisterApi } from '@/types';
+import { AuthRegisterApi, UpdateUserApi, UserDto, UserRoleEnum } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -49,7 +49,15 @@ export class UserService {
 
   async getUser(_id: string): Promise<User> {
     try {
-      const user = await this.userRepository.findOneBy({ id: _id });
+      const user = await this.userRepository.findOne({
+        where: { id: _id },
+        relations: ['house', 'tasks', 'profilePicture'],
+        select: {
+          tasks: {
+            id: true,
+          },
+        },
+      });
       return { ...user };
     } catch (error) {
       throw new NotFoundException(errorMessage.api('user').NOT_FOUND, _id);
@@ -89,6 +97,7 @@ export class UserService {
             id: houseId,
           },
         },
+        relations: ['house', 'tasks'],
       });
     } catch (error) {
       throw new BadRequestException(errorMessage.api('user').NOT_FOUND);

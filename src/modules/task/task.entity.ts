@@ -5,19 +5,16 @@ import {
   JoinTable,
   ManyToMany,
   OneToOne,
-  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BaseEntity } from '../base.entity';
-import { TaskRecurrenceEnum, TaskStatusEnum } from '../../types';
+import { TaskStatusEnum } from '../../types';
 import { User } from '../user/user.entity';
 import { Animal } from '../animal/animal.entity';
 import { Media } from '../media/media.entity';
+import { Recurrence } from '../recurrence/recurrence.entity';
 
 @Entity()
 export class Task extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
   @Column()
   title: string;
 
@@ -29,9 +26,6 @@ export class Task extends BaseEntity {
 
   @Column({ nullable: true })
   message: string;
-
-  @Column({ nullable: true })
-  recurrence: TaskRecurrenceEnum;
 
   @Column()
   date: Date;
@@ -47,4 +41,10 @@ export class Task extends BaseEntity {
   @ManyToMany(() => Animal, (animal) => animal.tasks)
   @JoinTable()
   animals?: Animal[];
+
+  @OneToOne(() => Recurrence, (reccurence) => reccurence.task, {
+    nullable: true,
+  })
+  @JoinColumn()
+  recurrence?: Recurrence;
 }

@@ -12,7 +12,7 @@ import { HouseService } from './house.service';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
-import { CreateHouseApi } from '@/types';
+import { CreateHouseApi, UpdateHouseApi } from '@/types';
 import { User } from '../user/user.entity';
 import { houseValidation } from '@/validations';
 import { UserService } from '../user/user.service';
@@ -63,9 +63,7 @@ export class HouseController {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     const house = await this.service.getHouse(user.house.id);
-    const users = await this.userService.findUsersByHouseId(house.id);
-    const joinCode = await this.joincodeService.findJoincodeByHouseId(house.id);
-    return this.service.formatHouse({ ...house, users, joinCode });
+    return this.service.formatHouse({ ...house });
   }
 
   @Patch()
@@ -73,14 +71,36 @@ export class HouseController {
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
   async updateHouse(
-    @Body() body: CreateHouseApi,
+    @Body() body: UpdateHouseApi,
     @GetCurrentUser() user: User,
   ) {
     try {
       await houseValidation.update.validate(body, {
         abortEarly: false,
       });
-      const house = await this.service.updateHouse(body, user.house.id);
+
+      let users = user.house.users;
+      if (body.userIds) {
+        users = await Promise.all(
+          body.userIds.map((userId) => this.userService.getUser(userId)),
+        );
+      }
+
+      let animals = user.house.animals;
+      if (body.animalIds) {
+        animals = await Promise.all(
+          body.animalIds.map((animalId) =>
+            this.animalService.findOneById(animalId),
+          ),
+        );
+      }
+
+      const house = await this.service.updateHouse({
+        ...user.house,
+        ...body,
+        users,
+        animals,
+      });
       return this.service.formatHouse(house);
     } catch (e) {
       throw new BadRequestException(e.errors);
@@ -98,14 +118,17 @@ export class HouseController {
     return users.map((user) => this.userService.formatUser(user));
   }
 
-  @Get('join-codes')
+  @Get('join-code')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
   async getJoinCodes(@GetCurrentUser() user: User) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
-    return this.joincodeService.formatJoinCode(user.house.joinCode);
+    const joinCode = await this.joincodeService.findJoincodeByHouseId(
+      user.house.id,
+    );
+    return this.joincodeService.formatJoinCode(joinCode);
   }
 
   @Get('animals')
@@ -121,16 +144,5 @@ export class HouseController {
         return this.animalService.formatAnimal({ ...animal, tasks });
       }),
     );
-  }
-
-  @Get('tasks')
-  @HttpCode(200)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  async getTasks(@GetCurrentUser() user: User) {
-    if (!user.house)
-      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
-    const tasks = await this.taskService.findTaskByUserId(user.id);
-    return tasks.map((task) => this.taskService.formatTask(task));
   }
 }

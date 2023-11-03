@@ -7,7 +7,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { User } from '../user/user.entity';
 import { JoinCodeTypeEnum } from '@/types';
 
-@Controller('join-codes')
+@Controller('join-code')
 export class JoincodeController {
   constructor(
     private readonly service: JoinCodeService,
@@ -35,15 +35,6 @@ export class JoincodeController {
       user.house,
       JoinCodeTypeEnum.CHILD,
     );
-    return this.service.formatJoinCode(joincode);
-  }
-
-  @Get('me')
-  @HttpCode(200)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  async getJoincode(@GetCurrentUser() user: User) {
-    const joincode = await this.service.findJoincodeByHouseId(user.house.id);
     return this.service.formatJoinCode(joincode);
   }
 }

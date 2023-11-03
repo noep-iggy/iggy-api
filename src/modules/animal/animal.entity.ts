@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import {
   AnimalGenderEnum,
@@ -16,9 +10,6 @@ import { Task } from '../task/task.entity';
 
 @Entity()
 export class Animal extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
   @Column()
   name: string;
 

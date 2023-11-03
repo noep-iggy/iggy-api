@@ -22,10 +22,39 @@ import {
 import { taskValidation } from '@/validations';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { errorMessage } from '@/errors';
+import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
+import { User } from '../user/user.entity';
 
 @Controller('tasks')
 export class TaskController {
   constructor(private readonly service: TaskService) {}
+
+  @Get()
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getTasks(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    const tasks = await this.service.findTaskByUserId(user.id);
+    return tasks.map((task) => this.service.formatTask(task));
+  }
+
+  @Get('status/:status')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getArchiveTasks(
+    @GetCurrentUser() user: User,
+    @Param('status') status: TaskStatusEnum,
+  ) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    if (TaskStatusEnum[status] === undefined)
+      throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
+    const tasks = await this.service.findTaskByStatus(user.id, status);
+    return tasks.map((task) => this.service.formatTask(task));
+  }
 
   @Post()
   @HttpCode(201)
@@ -108,8 +137,6 @@ export class TaskController {
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
   async deleteTask(@Param('id') id: string) {
-    const task = await this.service.getTaskById(id);
-    await this.service.deleteTask(task);
-    return this.service.formatTask(task);
+    await this.service.deleteTask(id);
   }
 }

@@ -42,9 +42,10 @@ const create: yup.ObjectSchema<AuthRegisterApi> = yup.object({
 });
 
 const login = yup.object<AuthLoginApi>().shape({
-  email: genericsValidation.email.required(
-    errorMessage.fields('email').REQUIRED,
-  ),
+  userName: yup
+    .string()
+    .required(errorMessage.fields('userName').REQUIRED)
+    .typeError(errorMessage.fields('userName').NOT_STRING),
   password: genericsValidation.password,
 });
 

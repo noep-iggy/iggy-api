@@ -16,6 +16,8 @@ import { JoinCodeModule } from './modules/join-code/join-code.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AnimalModule } from './modules/animal/animal.module';
 import { TaskModule } from './modules/task/task.module';
+import { RecurrenceModule } from './modules/recurrence/recurrence.module';
+import { BillingPlanModule } from './modules/billing-plan/billing-plan.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { TaskModule } from './modules/task/task.module';
     JoinCodeModule,
     AnimalModule,
     TaskModule,
+    RecurrenceModule,
+    BillingPlanModule,
   ],
   controllers: [AppController],
   providers: [AppService],

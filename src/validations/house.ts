@@ -15,6 +15,16 @@ const update: yup.ObjectSchema<UpdateHouseApi> = yup.object({
     .min(1, errorMessage.fields('name').REQUIRED)
     .optional()
     .default(undefined),
+  animalIds: yup
+    .array()
+    .of(yup.string().typeError(errorMessage.fields('animalIds').NOT_STRING))
+    .optional()
+    .default(undefined),
+  userIds: yup
+    .array()
+    .of(yup.string().typeError(errorMessage.fields('userIds').NOT_STRING))
+    .optional()
+    .default(undefined),
 });
 
 export const houseValidation = {

@@ -10,6 +10,7 @@ const fields = (item: string) => {
     NO_UPPERCASE: `fields.${item}.errors.noUppercase`,
     NOT_VALID: `fields.${item}.errors.notValid`,
     NOT_MATCH: `fields.${item}.errors.notMatch`,
+    NOT_NUMBER: `fields.${item}.errors.notNumber`,
   };
 };
 
