@@ -6,3 +6,4 @@ export * from './Animal';
 export * from './Task';
 export * from './Recurrence';
 export * from './BillingPlan';
+export * from './Affiliate';

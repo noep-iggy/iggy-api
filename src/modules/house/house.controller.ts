@@ -20,6 +20,8 @@ import { JoinCodeService } from '../join-code/join-code.service';
 import { errorMessage } from '@/errors';
 import { AnimalService } from '../animal/animal.service';
 import { TaskService } from '../task/task.service';
+import { AffiliateService } from '../affiliate/affiliate.service';
+import { decryptObject } from '@/utils';
 
 @Controller('house')
 export class HouseController {
@@ -29,6 +31,7 @@ export class HouseController {
     private readonly joincodeService: JoinCodeService,
     private readonly animalService: AnimalService,
     private readonly taskService: TaskService,
+    private readonly affiliateService: AffiliateService,
   ) {}
 
   @Post()
@@ -138,11 +141,33 @@ export class HouseController {
   async getAnimals(@GetCurrentUser() user: User) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
-    return Promise.all(
-      user.house.animals.map(async (animal) => {
-        const tasks = await this.taskService.findTasksByAnimalId(animal.id);
-        return this.animalService.formatAnimal({ ...animal, tasks });
+    const animals = await this.animalService.findAnimalsByHouseId(
+      user.house.id,
+    );
+    return animals.map((animal) => this.animalService.formatAnimal(animal));
+  }
+
+  @Get('affiliates')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getAffiliates(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    const animals = await this.animalService.findAnimalsByHouseId(
+      user.house.id,
+    );
+
+    const affiliates = await Promise.all(
+      animals.map(async (animal) => {
+        const animalDecrypted = decryptObject(animal);
+        return await this.affiliateService.getAffiliateByAnimalType(
+          animalDecrypted.type,
+        );
       }),
     );
+    return affiliates
+      .flat()
+      .map((affiliate) => this.affiliateService.formatAffiliate(affiliate));
   }
 }

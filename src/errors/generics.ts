@@ -11,6 +11,7 @@ const fields = (item: string) => {
     NOT_VALID: `fields.${item}.errors.notValid`,
     NOT_MATCH: `fields.${item}.errors.notMatch`,
     NOT_NUMBER: `fields.${item}.errors.notNumber`,
+    NOT_URL: `fields.${item}.errors.notUrl`,
   };
 };
 

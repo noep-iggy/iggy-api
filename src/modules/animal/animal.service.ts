@@ -49,6 +49,17 @@ export class AnimalService {
     }
   }
 
+  async findAnimalsByHouseId(houseId: string): Promise<Animal[]> {
+    try {
+      const animals = await this.animalRepository.find({
+        where: { house: { id: houseId } },
+      });
+      return animals;
+    } catch (error) {
+      throw new BadRequestException(errorMessage.api('animal').NOT_FOUND);
+    }
+  }
+
   async findOneByName(name: string): Promise<Animal | null> {
     const animal = await this.animalRepository.findOne({
       where: [{ name }],

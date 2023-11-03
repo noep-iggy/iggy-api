@@ -5,3 +5,4 @@ export * from './animal';
 export * from './task';
 export * from './recurrence';
 export * from './billingPlan';
+export * from './affiliate';

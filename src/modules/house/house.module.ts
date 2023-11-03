@@ -15,6 +15,7 @@ import { JoinCodeModule } from '../join-code/join-code.module';
 import { AnimalModule } from '../animal/animal.module';
 import { TaskModule } from '../task/task.module';
 import { BillingPlanModule } from '../billing-plan/billing-plan.module';
+import { AffiliateModule } from '../affiliate/affiliate.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BillingPlanModule } from '../billing-plan/billing-plan.module';
     forwardRef(() => AnimalModule),
     forwardRef(() => TaskModule),
     forwardRef(() => BillingPlanModule),
+    forwardRef(() => AffiliateModule),
   ],
   providers: [HouseService],
   controllers: [HouseController],

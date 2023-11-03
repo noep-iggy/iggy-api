@@ -18,6 +18,7 @@ import { AnimalModule } from './modules/animal/animal.module';
 import { TaskModule } from './modules/task/task.module';
 import { RecurrenceModule } from './modules/recurrence/recurrence.module';
 import { BillingPlanModule } from './modules/billing-plan/billing-plan.module';
+import { AffiliateModule } from './modules/affiliate/affiliate.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { BillingPlanModule } from './modules/billing-plan/billing-plan.module';
     TaskModule,
     RecurrenceModule,
     BillingPlanModule,
+    AffiliateModule,
   ],
   controllers: [AppController],
   providers: [AppService],

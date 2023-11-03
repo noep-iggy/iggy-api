@@ -19,6 +19,7 @@ import {
   UpdateBillingPlanApi,
 } from '@/types';
 import { errorMessage } from '@/errors';
+import { billingPlanValidation } from '@/validations';
 
 @Controller('billing-plans')
 export class BillingPlanController {
@@ -45,6 +46,10 @@ export class BillingPlanController {
   @ApiBearerAuth()
   async getBillingPlanByType(@Param('type') type: BillingPlanTypeEnum) {
     try {
+      if (BillingPlanTypeEnum[type] === undefined)
+        throw new BadRequestException(
+          errorMessage.api('billingPlan').NOT_FOUND,
+        );
       const billingPlans = await this.service.getBillingPlanByType(type);
       return this.service.formatBillingPlan(billingPlans);
     } catch (e) {
@@ -58,6 +63,9 @@ export class BillingPlanController {
   @ApiBearerAuth()
   async createBillingPlan(@Body() body: CreateBillingPlanApi) {
     try {
+      await billingPlanValidation.create.validate(body, {
+        abortEarly: false,
+      });
       const billingPlan = await this.service.createBillingPlan(body);
       return this.service.formatBillingPlan(billingPlan);
     } catch (e) {
@@ -74,6 +82,9 @@ export class BillingPlanController {
     @Body() body: UpdateBillingPlanApi,
   ) {
     try {
+      await billingPlanValidation.update.validate(body, {
+        abortEarly: false,
+      });
       if (BillingPlanTypeEnum[type] === undefined)
         throw new BadRequestException(
           errorMessage.api('billingPlan').NOT_FOUND,
