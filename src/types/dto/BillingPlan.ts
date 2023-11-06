@@ -2,7 +2,7 @@ import { BaseDto } from './BaseDto';
 
 export enum BillingPlanTypeEnum {
   FREE = 'FREE',
-  PAID = 'PAID',
+  PREMIUM = 'PREMIUM',
 }
 
 export interface BillingPlanDto extends BaseDto {

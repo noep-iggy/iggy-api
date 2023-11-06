@@ -36,7 +36,7 @@ export class TaskController {
   async getTasks(@GetCurrentUser() user: User) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
-    const tasks = await this.service.findTaskByUserId(user.id);
+    const tasks = await this.service.findTaskByHouseId(user.house.id);
     return tasks.map((task) => this.service.formatTask(task));
   }
 
@@ -52,7 +52,7 @@ export class TaskController {
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     if (TaskStatusEnum[status] === undefined)
       throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
-    const tasks = await this.service.findTaskByStatus(user.id, status);
+    const tasks = await this.service.findTaskByStatus(user.house.id, status);
     return tasks.map((task) => this.service.formatTask(task));
   }
 

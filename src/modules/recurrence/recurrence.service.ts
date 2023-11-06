@@ -96,7 +96,9 @@ export class RecurrenceService {
           });
           await this.taskService.createTask({
             ...decryptedTask,
-            date: new Date(task.date.setDate(task.date.getDate() + 1)),
+            date: new Date(
+              new Date(Date.now()).setDate(task.date.getDate() + 1),
+            ),
             userIds: task.users.map((user) => user.id),
             animalIds: task.animals.map((animal) => animal.id),
             recurrence: TaskRecurrenceEnum.DAILY,
@@ -126,7 +128,9 @@ export class RecurrenceService {
           });
           await this.taskService.createTask({
             ...decryptedTask,
-            date: new Date(task.date.setDate(task.date.getDate() + 7)),
+            date: new Date(
+              new Date(Date.now()).setDate(new Date(Date.now()).getDate() + 7),
+            ),
             userIds: task.users.map((user) => user.id),
             animalIds: task.animals.map((animal) => animal.id),
             recurrence: TaskRecurrenceEnum.WEEKLY,
@@ -156,7 +160,9 @@ export class RecurrenceService {
           });
           await this.taskService.createTask({
             ...decryptedTask,
-            date: new Date(task.date.setDate(task.date.getMonth() + 1)),
+            date: new Date(
+              new Date(Date.now()).setDate(new Date(Date.now()).getMonth() + 1),
+            ),
             userIds: task.users.map((user) => user.id),
             animalIds: task.animals.map((animal) => animal.id),
             recurrence: TaskRecurrenceEnum.MONTHLY,

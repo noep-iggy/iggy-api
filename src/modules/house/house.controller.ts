@@ -166,8 +166,17 @@ export class HouseController {
         );
       }),
     );
+
     return affiliates
       .flat()
+      .filter((affiliate, index, self) => {
+        return (
+          index ===
+          self.findIndex(
+            (t) => t.id === affiliate.id && t.title === affiliate.title,
+          )
+        );
+      })
       .map((affiliate) => this.affiliateService.formatAffiliate(affiliate));
   }
 }

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Task } from './task.entity';
 import { CreateTaskApi, TaskDto, TaskStatusEnum, UpdateTaskApi } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
@@ -64,18 +64,6 @@ export class TaskService {
     }
   }
 
-  async findTasks(): Promise<Task[]> {
-    try {
-      const tasks = await this.taskRepository.find({
-        relations: ['users', 'animals', 'recurrence'],
-      });
-      return tasks;
-    } catch (error) {
-      console.log(error);
-      throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
-    }
-  }
-
   async getTaskById(id: string): Promise<Task> {
     try {
       const task = await this.taskRepository.findOne({
@@ -92,10 +80,26 @@ export class TaskService {
   async findTaskByUserId(userId: string): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
-        where: { users: { id: userId }, status: Not(TaskStatusEnum.ARCHIVED) },
+        where: { users: { id: userId } },
         relations: ['users', 'animals', 'recurrence'],
       });
       return tasks;
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
+    }
+  }
+
+  async findTaskByHouseId(houseId: string): Promise<Task[]> {
+    try {
+      const users = await this.userService.findUsersByHouseId(houseId);
+      const tasks = await Promise.all(
+        users.map((user) => this.findTaskByUserId(user.id)),
+      );
+
+      return tasks.flat().filter((task, index, self) => {
+        return index === self.findIndex((t) => t.id === task.id);
+      });
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
@@ -103,28 +107,22 @@ export class TaskService {
   }
 
   async findTaskByStatus(
-    userId: string,
+    houseId: string,
     status: TaskStatusEnum,
   ): Promise<Task[]> {
     try {
-      const tasks = await this.taskRepository.find({
-        where: { users: { id: userId }, status: status },
-        relations: ['users', 'animals', 'recurrence'],
+      const users = await this.userService.findUsersByHouseId(houseId);
+      const tasks = await Promise.all(
+        users.map((user) =>
+          this.taskRepository.find({
+            where: { users: { id: user.id }, status },
+            relations: ['users', 'animals', 'recurrence'],
+          }),
+        ),
+      );
+      return tasks.flat().filter((task, index, self) => {
+        return index === self.findIndex((t) => t.id === task.id);
       });
-      return tasks;
-    } catch (error) {
-      console.log(error);
-      throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
-    }
-  }
-
-  async findTasksByAnimalId(animalId: string): Promise<Task[]> {
-    try {
-      const tasks = await this.taskRepository.find({
-        where: { animals: { id: animalId } },
-        relations: ['users', 'animals'],
-      });
-      return tasks;
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
@@ -265,7 +263,7 @@ export class TaskService {
         picture: undefined,
       });
       await this.animalService.updateAnimalsStatus('upgrade', task.animals);
-      await this.mediaService.deleteMedia(task.picture.id);
+      if (task.picture) await this.mediaService.deleteMedia(task.picture.id);
       return taskUpdated;
     } catch (error) {
       console.log(error);
