@@ -30,10 +30,10 @@ export class AppService {
 
   async populateDatabase(): Promise<string> {
     const { user, access_token } = await this.authService.register(
-      populate.user.register,
+      populate.user.parent,
     );
     console.log(
-      `LOGIN PARENT :\n userName : ${user.userName} : password : ${populate.user.register.password} \n token : ${access_token.access_token}`,
+      `LOGIN PARENT :\n userName : ${user.userName} : password : ${populate.user.parent.password} \n token : ${access_token.access_token}`,
     );
 
     await Promise.all(
@@ -62,23 +62,16 @@ export class AppService {
       JoinCodeTypeEnum.CHILD,
     );
 
-    const userCreated = await Promise.all(
-      populate.user.standard.map(async (userData) => {
-        const { user } = await this.authService.join(
-          userData,
-          joinCodeChild.code,
-        );
-        console.log(
-          `LOGIN ENFANT :\n userName : ${user.userName} : password : ${userData.password} \n token : ${access_token.access_token}`,
-        );
+    const { user: child, access_token: child_access_token } =
+      await this.authService.join(populate.user.child, joinCodeChild.code);
 
-        return user;
-      }),
+    console.log(
+      `LOGIN CHILD :\n userName : ${child.userName} : password : ${populate.user.child.password} \n token : ${child_access_token.access_token}`,
     );
 
     const tasksCreated = await Promise.all(
       populate
-        .tasks([user, ...userCreated], animalsCreated)
+        .tasks([user, child], animalsCreated)
         .map((task) => this.taskService.createTask(task)),
     );
 

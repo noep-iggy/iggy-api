@@ -31,7 +31,7 @@ export function tasks(users: User[], animals: Animal[]): CreateTaskApi[] {
       title: 'Faire un câlin aux animaux',
       description: 'Faire un câlin au chat',
       date: new Date(new Date(Date.now()).setHours(3)),
-      userIds: [users[2].id],
+      userIds: [users[0].id],
       animalIds: [animals[0].id, animals[1].id],
     },
   ];
