@@ -26,7 +26,7 @@ import { JoinCodeModule } from '../join-code/join-code.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secretOrPrivateKey: configService.get('JWT_SECRET'),
+        secret: configService.get('JWT_SECRET'),
       }),
       inject: [ConfigService],
     }),

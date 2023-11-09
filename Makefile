@@ -13,7 +13,7 @@ db.create: ## Create database
 	@echo "Removing old db_data..."
 	@make db.delete
 	@echo "Starting Docker Compose..."
-	@docker-compose up -d
+	@docker-compose -f docker-compose.dev.yml up -d
 	@echo "Sleeping for 5 seconds..."
 	@sleep 5
 	@echo "Running make migration..."
@@ -21,7 +21,7 @@ db.create: ## Create database
 
 
 db.delete: ## Delete database
-	docker-compose down && rm -rf ./db_data && rm -rf ./src/migrations
+	docker-compose -f docker-compose.dev.yml down && rm -rf ./db_data && rm -rf ./src/migrations
 
 db.start: ## Start database
 	docker start iggy-db
@@ -51,13 +51,27 @@ module.create: ## Create module
 
 #-- MIGRATION
 migration: ## Generate migration and push on server
-	make migration.create && make migration.push
+	make migration.generate && make migration.run
 
-migration.create: ## Generate migration 
+migration.generate: ## Generate migration 
 	@read -p "Entrer le nom de la migration (default: migration): " name; \
 	name=$${name:-migration}; \
-	npx ts-node ./node_modules/.bin/typeorm migration:generate ./src/migrations/$$name -d ormconfig.ts
+	npx typeorm-ts-node-esm migration:generate ./src/migrations/$$name -d ./ormconfig.ts
 
 
-migration.push: ## Push migration on server
-	npx ts-node ./node_modules/.bin/typeorm migration:run -d ormConfig.ts
+migration.run: ## Push migration on server
+	npx typeorm-ts-node-esm migration:run -d ./ormconfig.ts
+
+#-- PRODUCTION
+
+prod.create: ## Create production
+	make prod.delete && docker-compose -f docker-compose.prod.yml up -d
+
+prod.start: ## Start production
+	docker start iggy-back && docker start iggy-db
+
+prod.stop: ## Stop production
+	docker stop iggy-back && docker stop iggy-db
+
+prod.delete: ## Delete production
+	docker-compose -f docker-compose.prod.yml down && rm -rf ./db_data && rm -rf ./src/migrations

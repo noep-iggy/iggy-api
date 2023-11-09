@@ -1,0 +1,37 @@
+version: '3.8'
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  iggy-back:
+    image: 'iggy-back'
+    container_name: iggy-back
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+      - '8000:8000'
+    depends_on:
+      - iggy-db
+    networks:
+      - app-network
+
+  iggy-db:
+    image: 'postgres:14.5-alpine'
+    command: postgres -c 'max_connections=1000'
+    restart: always
+    container_name: iggy-db
+    environment:
+      - POSTGRES_PASSWORD=Azerty12!
+      - POSTGRES_USER=iggy-db
+      - POSTGRES_DB=iggy-db
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - app-network
