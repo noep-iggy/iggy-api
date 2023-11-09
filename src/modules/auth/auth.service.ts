@@ -40,7 +40,10 @@ export class AuthService {
     const joinCode = await this.joinCodeService.getJoincode(code);
     if (!joinCode)
       throw new NotFoundException(errorMessage.api('joincode').NOT_FOUND);
-    const possibleUser = await this.userRepository.findOneByName(userName);
+    const possibleUser = await this.houseService.findUserByNameInHouse(
+      userName,
+      joinCode.house.id,
+    );
     if (possibleUser)
       throw new BadRequestException(errorMessage.api('user').EXIST);
     const encryptedPassword = await this.encryptPassword(password);
@@ -65,9 +68,6 @@ export class AuthService {
   }
 
   async register(body: AuthRegisterApi) {
-    const possibleUser = await this.userRepository.findOneByName(body.userName);
-    if (possibleUser)
-      throw new BadRequestException(errorMessage.api('user').EXIST);
     const { userName, password } = body;
     const encryptedPassword = await this.encryptPassword(password);
     const createdUser = await this.userRepository.createUser(

@@ -9,7 +9,6 @@ import { JoinCodeService } from '../join-code/join-code.service';
 import { Animal } from '../animal/animal.entity';
 import { BillingPlanService } from '../billing-plan/billing-plan.service';
 import { InjectRepository } from '@nestjs/typeorm';
-
 @Injectable()
 export class HouseService {
   constructor(
@@ -108,6 +107,25 @@ export class HouseService {
         },
       });
       return house;
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    }
+  }
+
+  async findUserByNameInHouse(
+    userName: string,
+    houseId: string,
+  ): Promise<User> {
+    try {
+      const users = await this.houseRepository.findOne({
+        where: {
+          id: houseId,
+        },
+        relations: ['users'],
+      });
+      const user = users.users.find((user) => user.userName === userName);
+      return user;
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
