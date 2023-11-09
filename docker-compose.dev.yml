@@ -5,15 +5,15 @@ networks:
     driver: bridge
 
 services:
-  iggy-db:
+  iggy-db-dev:
     image: 'postgres:14.5-alpine'
     command: postgres -c 'max_connections=1000'
     restart: always
-    container_name: iggy-db
+    container_name: iggy-db-dev
     environment:
-      - POSTGRES_PASSWORD=Azerty12!
-      - POSTGRES_USER=iggy-db
-      - POSTGRES_DB=iggy-db
+      - POSTGRES_PASSWORD=${TYPEORM_PASSWORD}
+      - POSTGRES_USER=${TYPEORM_USERNAME}
+      - POSTGRES_DB=${TYPEORM_DATABASE}
     volumes:
       - ./db_data:/var/lib/postgresql/data
     ports:
