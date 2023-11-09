@@ -6,12 +6,9 @@ networks:
 
 services:
   iggy-back:
-    image: 'iggy-back'
+    image: 'noephilippe/iggy-back:latest'
     container_name: iggy-back
     restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
     env_file: .env
     ports:
       - '8000:8000'
