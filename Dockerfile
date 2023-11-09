@@ -1,4 +1,4 @@
-FROM node:16 AS builder
+FROM node:19 AS builder
 WORKDIR /app
 COPY ./package.json ./
 COPY .env.production .env
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 
-FROM node:16-alpine
+FROM node:19-alpine
 WORKDIR /app
 COPY --from=builder /app ./
 CMD ["npm", "run", "start:prod"]
