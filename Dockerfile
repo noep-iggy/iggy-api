@@ -1,4 +1,4 @@
-FROM node:16 AS builder
+FROM --platform=linux/arm64 node:16 AS builder
 WORKDIR /app
 COPY ./package.json ./
 COPY .env.production .env
