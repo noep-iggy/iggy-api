@@ -22,7 +22,7 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image
-      run: docker buildx build --platform=linux/amd64. --file Dockerfile --tag ${{secrets.DOCKER_REPO}}:latest --platform linux/amd64
+      run: docker buildx build --platform=linux/amd64. --file Dockerfile --tag ${{secrets.DOCKER_REPO}}:latest 
     
     - name: Tag the Docker image
       run: docker tag ${{secrets.DOCKER_REPO}}:latest ${{secrets.DOCKER_USER}}/${{secrets.DOCKER_REPO}}:latest
