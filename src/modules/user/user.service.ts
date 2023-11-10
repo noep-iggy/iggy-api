@@ -8,7 +8,7 @@ import {
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { errorMessage } from '@/errors';
-import { AuthRegisterApi, UpdateUserApi, UserDto, UserRoleEnum } from '@/types';
+import { RegisterApi, UpdateUserApi, UserDto, UserRoleEnum } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -25,7 +25,8 @@ export class UserService {
     const user = decryptObject(userCripted);
     return {
       id: user.id,
-      userName: user.userName,
+      firstName: user.firstName,
+      lastName: user.lastName ?? undefined,
       email: user.email ?? undefined,
       tasks:
         user.tasks && user.tasks.length > 0
@@ -52,11 +53,6 @@ export class UserService {
       const user = await this.userRepository.findOne({
         where: { id: _id },
         relations: ['house', 'tasks', 'profilePicture'],
-        select: {
-          tasks: {
-            id: true,
-          },
-        },
       });
       return { ...user };
     } catch (error) {
@@ -64,21 +60,28 @@ export class UserService {
     }
   }
 
-  async findOneByName(userName: string): Promise<User | null> {
+  async findOneByName(firstName: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
-      where: [{ userName }],
+      where: [{ firstName }],
     });
     return user;
   }
 
-  async createUser(body: AuthRegisterApi, role: UserRoleEnum): Promise<User> {
+  async findOneByEmail(email: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: [{ email }],
+    });
+    return user;
+  }
+
+  async createUser(body: RegisterApi, role: UserRoleEnum): Promise<User> {
     try {
-      const { email, userName, password, ...user } = body;
+      const { email, firstName, password, ...user } = body;
       const encryptUser = encryptObject(user);
       return await this.userRepository.save({
         ...encryptUser,
         email,
-        userName,
+        firstName,
         password,
         role,
         profilePicture: null,
@@ -104,23 +107,33 @@ export class UserService {
     }
   }
 
-  async updateUser(body: UpdateUserApi, id: string): Promise<User> {
+  async updateUser(
+    body: UpdateUserApi,
+    id: string,
+    houseId: string,
+  ): Promise<User> {
     try {
-      if (body.userName) {
-        const possibleUser = await this.findOneByName(body.userName);
+      if (body.firstName) {
+        const possibleUser = await this.houseService.findUserByNameInHouse(
+          body.firstName,
+          houseId,
+        );
         if (possibleUser)
           throw new BadRequestException(errorMessage.api('user').EXIST);
       }
       const user = await this.getUser(id);
+      if (user.role) {
+        if (user.role === UserRoleEnum.CHILD)
+          throw new BadRequestException(errorMessage.api('user').NOT_ADMIN);
+      }
       const profilePictureMedia =
         body.profilePicture &&
         (await this.mediaService.getMediaById(body.profilePicture));
-
       await this.userRepository.update(id, {
-        ...user,
         role: body.role ?? user.role,
         email: body.email ?? user.email,
-        userName: body.userName ?? user.userName,
+        firstName: body.firstName ?? user.firstName,
+        lastName: body.lastName ?? user.lastName,
         updatedAt: new Date(),
         profilePicture: profilePictureMedia ?? user.profilePicture,
       });
@@ -130,6 +143,7 @@ export class UserService {
       }
       return await this.getUser(id);
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(error);
     }
   }

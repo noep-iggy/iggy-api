@@ -21,10 +21,12 @@ export class AdminService {
 
   async loadAdmin() {
     const adminBody = {
-      userName: 'admin',
+      firstName: 'admin',
+      lastName: 'admin',
       email: 'admin@gmail.com',
       password: 'Azerty123!',
-      role: UserRoleEnum.ADMIN,
+      isAdmin: true,
+      role: UserRoleEnum.PARENT,
     };
     try {
       const admin = await this.adminRepository.findOne({
@@ -42,7 +44,7 @@ export class AdminService {
   }
 
   async toggleAdminStatus(user: User, id: string): Promise<UserDto> {
-    if (user.role === UserRoleEnum.ADMIN) {
+    if (user.isAdmin) {
       if (user.id === id)
         throw new BadRequestException(
           errorMessage.api('admin').CANNOT_CHANGE_OWN_STATUS,
@@ -62,7 +64,7 @@ export class AdminService {
   }
 
   async getUser(user: User, id: string): Promise<User> {
-    if (user.role === UserRoleEnum.ADMIN) {
+    if (user.isAdmin) {
       return await this.usersService.getUser(id);
     } else {
       throw new UnauthorizedException(errorMessage.api('admin').NOT_ADMIN);
@@ -70,15 +72,15 @@ export class AdminService {
   }
 
   async updateUser(user: User, id: string, body: UpdateUserApi): Promise<User> {
-    if (user.role === UserRoleEnum.ADMIN) {
-      return await this.usersService.updateUser(body, id);
+    if (user.isAdmin) {
+      return await this.usersService.updateUser(body, id, user.house.id);
     } else {
       throw new UnauthorizedException(errorMessage.api('admin').NOT_ADMIN);
     }
   }
 
   async deleteUser(user: User, id: string): Promise<void> {
-    if (user.role === UserRoleEnum.ADMIN) {
+    if (user.isAdmin) {
       return await this.usersService.deleteUser(id);
     } else {
       throw new UnauthorizedException(errorMessage.api('admin').NOT_ADMIN);

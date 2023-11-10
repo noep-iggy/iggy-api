@@ -34,6 +34,17 @@ export class RecurrenceService {
     };
   }
 
+  async getRecurrence(recurrenceId: string): Promise<RecurrenceDto> {
+    try {
+      const recurrence = await this.reccurenceRepository.findOne({
+        where: { id: recurrenceId },
+      });
+      return this.formatRecurrence(recurrence);
+    } catch (error) {
+      throw new Error(errorMessage.api('recurrence').NOT_FOUND);
+    }
+  }
+
   async createRecurrence(
     recurrence: CreateRecurrenceApi,
     task: Task,
@@ -69,7 +80,12 @@ export class RecurrenceService {
 
   async deleteRecurrence(recurrenceId: string): Promise<void> {
     try {
-      await this.reccurenceRepository.delete(recurrenceId);
+      const recurrence = await this.reccurenceRepository.findOne({
+        where: { id: recurrenceId },
+        relations: ['task'],
+      });
+      await this.taskService.removeRecurrenceTask(recurrence.task.id);
+      await this.reccurenceRepository.delete({ id: recurrenceId });
     } catch (error) {
       console.log(error);
       throw new Error(errorMessage.api('recurrence').NOT_DELETED);

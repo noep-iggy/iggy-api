@@ -31,8 +31,8 @@ export class UserModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/user', method: RequestMethod.ALL },
-        { path: '/user/*', method: RequestMethod.ALL },
+        { path: '/users', method: RequestMethod.ALL },
+        { path: '/users/*', method: RequestMethod.ALL },
       );
   }
 }

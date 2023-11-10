@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   Patch,
@@ -40,19 +41,42 @@ export class AnimalController {
     }
   }
 
+  @Get()
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getAnimals(@GetCurrentUser() user: User) {
+    try {
+      const animals = await this.service.findAnimalsByHouseId(user.house.id);
+      return animals.map((animal) => this.service.formatAnimal(animal));
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  @Get(':id')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getAnimal(@Param('id') id: string) {
+    try {
+      const animal = await this.service.findOneById(id);
+      return this.service.formatAnimal(animal);
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
   @Patch(':id')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async updateAnimal(
-    @Body() body: CreateAnimalApi,
-    @Param() params: { id: string },
-  ) {
+  async updateAnimal(@Body() body: CreateAnimalApi, @Param('id') id: string) {
     try {
       await animalValidation.update.validate(body, {
         abortEarly: false,
       });
-      const animal = await this.service.updateAnimal(body, params.id);
+      const animal = await this.service.updateAnimal(body, id);
       return this.service.formatAnimal(animal);
     } catch (e) {
       throw new BadRequestException(e);

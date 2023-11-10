@@ -1,4 +1,11 @@
-import { Controller, Delete, HttpCode, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { RecurrenceService } from './recurrence.service';
@@ -12,6 +19,14 @@ export class RecurrenceController {
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
   async deleteRecurrence(@Param('id') id: string) {
-    await this.service.deleteRecurrence(id);
+    return await this.service.deleteRecurrence(id);
+  }
+
+  @Get(':id')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getRecurrence(@Param('id') id: string) {
+    return await this.service.getRecurrence(id);
   }
 }

@@ -76,15 +76,14 @@ export class AnimalService {
 
   async updateAnimal(body: UpdateAnimalApi, id: string): Promise<Animal> {
     try {
-      const animal = await this.animalRepository.findOneBy({ id });
       const encrypBody = encryptObject(body);
-      const animalUpdated = await this.animalRepository.save({
-        ...animal,
-        ...encrypBody,
-        updatedAt: new Date(),
-      });
-      return animalUpdated;
+      await this.animalRepository.update(
+        { id },
+        { ...encrypBody, updatedAt: new Date() },
+      );
+      return await this.animalRepository.findOneBy({ id });
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(errorMessage.api('animal').NOT_UPDATED);
     }
   }

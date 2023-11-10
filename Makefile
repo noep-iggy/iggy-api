@@ -29,6 +29,16 @@ db.start: ## Start database
 db.stop: ## Stop database
 	docker stop iggy-db
 
+db.clean: ## Clean database
+	@echo "Removing old db_data..."
+	@make db.delete
+	@echo "Starting Docker Compose..."
+	@docker-compose up -d
+	@echo "Sleeping for 5 seconds..."
+	@sleep 5
+	@echo "Running make migration..."
+	@yarn migrate
+
 #-- TYPEORM
 module.create: ## Create module
 	@read -p "Entrer le nom du module: " name; \

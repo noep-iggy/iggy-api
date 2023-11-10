@@ -80,6 +80,7 @@ export class BillingPlanService {
       const billingPlanUpdated = await this.billingPlanRepository.save({
         ...billingPlan,
         ...body,
+        updatedAt: new Date(),
       });
       return billingPlanUpdated;
     } catch (error) {

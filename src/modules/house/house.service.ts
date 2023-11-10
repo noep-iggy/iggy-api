@@ -114,7 +114,7 @@ export class HouseService {
   }
 
   async findUserByNameInHouse(
-    userName: string,
+    firstName: string,
     houseId: string,
   ): Promise<User> {
     try {
@@ -124,7 +124,7 @@ export class HouseService {
         },
         relations: ['users'],
       });
-      const user = users.users.find((user) => user.userName === userName);
+      const user = users.users.find((user) => user.firstName === firstName);
       return user;
     } catch (error) {
       console.log(error);

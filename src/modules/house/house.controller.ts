@@ -12,7 +12,7 @@ import { HouseService } from './house.service';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
-import { CreateHouseApi, UpdateHouseApi } from '@/types';
+import { BillingPlanTypeEnum, CreateHouseApi, UpdateHouseApi } from '@/types';
 import { User } from '../user/user.entity';
 import { houseValidation } from '@/validations';
 import { UserService } from '../user/user.service';
@@ -22,6 +22,7 @@ import { AnimalService } from '../animal/animal.service';
 import { TaskService } from '../task/task.service';
 import { AffiliateService } from '../affiliate/affiliate.service';
 import { decryptObject } from '@/utils';
+import { BillingPlanService } from '../billing-plan/billing-plan.service';
 
 @Controller('house')
 export class HouseController {
@@ -32,6 +33,7 @@ export class HouseController {
     private readonly animalService: AnimalService,
     private readonly taskService: TaskService,
     private readonly affiliateService: AffiliateService,
+    private readonly billingPlanService: BillingPlanService,
   ) {}
 
   @Post()
@@ -49,6 +51,14 @@ export class HouseController {
       if (user.house) {
         throw new BadRequestException(
           errorMessage.api('house').ALREADY_CREATED,
+        );
+      }
+      const billingPlan = await this.billingPlanService.getBillingPlanByType(
+        BillingPlanTypeEnum.FREE,
+      );
+      if (!billingPlan) {
+        throw new BadRequestException(
+          errorMessage.api('billingPlan').NOT_FOUND,
         );
       }
       const house = await this.service.createHouse(body, user);

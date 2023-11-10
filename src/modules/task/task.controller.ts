@@ -121,10 +121,6 @@ export class TaskController {
   @ApiBearerAuth()
   async refuseTask(@Param('id') id: string, @Body() body: RefuseTaskAPi) {
     try {
-      const task = await this.service.getTaskById(id);
-      if (task.status === TaskStatusEnum.DONE)
-        throw new BadRequestException(errorMessage.api('task').ALREADY_DONE);
-
       const taskUpdated = await this.service.refuseTask(id, body.message);
       return this.service.formatTask(taskUpdated);
     } catch (e) {

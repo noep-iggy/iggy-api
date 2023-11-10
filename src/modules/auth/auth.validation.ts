@@ -7,8 +7,8 @@ import { errorMessage } from '@/errors';
 export class AuthValidation {
   constructor(private userRepository: UserService) {}
 
-  async validateUser(userName: string, password: string): Promise<any> {
-    const user = await this.userRepository.findOneByName(userName);
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.userRepository.findOneByEmail(email);
     if (user && (await this.comparePassword(user.password, password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: __password, ...result } = user;

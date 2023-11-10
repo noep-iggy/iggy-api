@@ -33,7 +33,7 @@ export class AppService {
       populate.user.parent,
     );
     console.log(
-      `LOGIN PARENT :\n userName : ${user.userName} : password : ${populate.user.parent.password} \n token : ${access_token.access_token}`,
+      `LOGIN PARENT :\n email : ${user.email} : password : ${populate.user.parent.password} \n token : ${access_token.access_token}`,
     );
 
     await Promise.all(
@@ -63,10 +63,13 @@ export class AppService {
     );
 
     const { user: child, access_token: child_access_token } =
-      await this.authService.join(populate.user.child, joinCodeChild.code);
+      await this.authService.joinChild(
+        populate.user.child,
+        joinCodeChild.house,
+      );
 
     console.log(
-      `LOGIN CHILD :\n userName : ${child.userName} : password : ${populate.user.child.password} \n token : ${child_access_token.access_token}`,
+      `LOGIN CHILD :\n firstName : ${child.firstName} : password : ${populate.user.child.password} \n token : ${child_access_token}`,
     );
 
     const tasksCreated = await Promise.all(

@@ -200,7 +200,7 @@ export class TaskService {
         date: date ? new Date(date) : task.date,
         users: userIds ? users : task.users,
         animals: animalIds ? animals : task.animals,
-        status: status ?? task.status,
+        status: date ? TaskStatusEnum.TODO : status ?? task.status,
         message: taskToCrypt.message
           ? encryptObject(taskToCrypt.message)
           : task.message,
@@ -218,6 +218,10 @@ export class TaskService {
       console.log('TASK ERROR', error);
       throw new BadRequestException(errorMessage.api('task').NOT_UPDATED);
     }
+  }
+
+  async removeRecurrenceTask(taskId: string): Promise<void> {
+    await this.taskRepository.update({ id: taskId }, { recurrence: null });
   }
 
   async checkTask(id: string, pictureId: string): Promise<Task> {
@@ -273,20 +277,19 @@ export class TaskService {
 
   async refuseTask(id: string, message: string): Promise<Task> {
     try {
-      const task = await this.taskRepository.findOne({
-        where: { id },
-        relations: ['users', 'animals'],
-      });
+      const task = await this.getTaskById(id);
       const cryotMessage = encryptObject({ message });
-      const taskUpdated = await this.taskRepository.save({
-        ...task,
-        status: TaskStatusEnum.TODO,
-        message: cryotMessage.message,
-        updatedAt: new Date(),
-        picture: undefined,
-      });
-      await this.mediaService.deleteMedia(task.picture.id);
-      return taskUpdated;
+      await this.taskRepository.update(
+        { id },
+        {
+          status: TaskStatusEnum.TODO,
+          message: cryotMessage.message,
+          picture: null,
+          updatedAt: new Date(),
+        },
+      );
+      task.picture && (await this.mediaService.deleteMedia(task.picture.id));
+      return await this.getTaskById(id);
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_UPDATED);

@@ -1,14 +1,14 @@
-import { AuthRegisterApi } from '@/types';
+import { JoinApi, RegisterApi } from '@/types';
 
-const parent: AuthRegisterApi = {
-  userName: 'Dorian',
+const parent: RegisterApi = {
+  firstName: 'Dorian',
+  lastName: 'Bouillet',
   email: 'dorian@gmail.com',
   password: 'Azerty12!',
 };
 
-const child: AuthRegisterApi = {
-  userName: 'Noé',
-  password: 'Azerty12!',
+const child: JoinApi = {
+  firstName: 'Noé',
 };
 
 export const user = {

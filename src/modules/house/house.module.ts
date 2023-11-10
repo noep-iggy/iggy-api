@@ -27,6 +27,7 @@ import { AffiliateModule } from '../affiliate/affiliate.module';
     forwardRef(() => TaskModule),
     forwardRef(() => BillingPlanModule),
     forwardRef(() => AffiliateModule),
+    forwardRef(() => BillingPlanModule),
   ],
   providers: [HouseService],
   controllers: [HouseController],

@@ -15,12 +15,15 @@ import { Task } from '../task/task.entity';
 @Entity()
 export class User extends BaseEntity {
   @Column()
-  userName: string;
+  firstName: string;
+
+  @Column({ nullable: true })
+  lastName: string;
 
   @Column({ nullable: true })
   email: string;
 
-  @Column({})
+  @Column({ nullable: true })
   password: string;
 
   @Column()
@@ -42,4 +45,7 @@ export class User extends BaseEntity {
     nullable: true,
   })
   tasks: Task[];
+
+  @Column({ default: false })
+  isAdmin: boolean;
 }

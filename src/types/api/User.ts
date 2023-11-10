@@ -3,7 +3,8 @@ import { UpdateHouseApi } from './House';
 
 export interface UpdateUserApi {
   email?: string;
-  userName?: string;
+  firstName?: string;
+  lastName?: string;
   profilePicture?: string;
   role?: UserRoleEnum;
   house?: UpdateHouseApi;
