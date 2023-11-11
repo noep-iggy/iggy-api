@@ -5,10 +5,12 @@ import {
   Delete,
   Get,
   HttpCode,
+  Inject,
   Param,
   Patch,
   Post,
   UseGuards,
+  forwardRef,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
@@ -27,7 +29,10 @@ import { User } from '../user/user.entity';
 
 @Controller('tasks')
 export class TaskController {
-  constructor(private readonly service: TaskService) {}
+  constructor(
+    @Inject(forwardRef(() => TaskService))
+    private readonly service: TaskService,
+  ) {}
 
   @Get()
   @HttpCode(200)

@@ -3,10 +3,12 @@ import {
   Body,
   Controller,
   HttpCode,
+  Inject,
   NotFoundException,
   Param,
   Post,
   UseGuards,
+  forwardRef,
 } from '@nestjs/common';
 import { ApiKeyGuard } from '../../decorators/api-key.decorator';
 import { AuthService } from './auth.service';
@@ -16,14 +18,18 @@ import { errorMessage } from '@/errors';
 import { JoinCodeService } from '../join-code/join-code.service';
 import { HouseService } from '../house/house.service';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
+    @Inject(forwardRef(() => AuthService))
     private authService: AuthService,
     private joinCodeService: JoinCodeService,
+    @Inject(forwardRef(() => HouseService))
     private houseService: HouseService,
     private jwtService: JwtService,
+    private readonly userService: UserService,
   ) {}
 
   @Post('login')
@@ -34,6 +40,23 @@ export class AuthController {
       await userValidation.login.validate(body, {
         abortEarly: false,
       });
+      return await this.authService.login(body);
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  @Post('login/admin')
+  @UseGuards(ApiKeyGuard)
+  @HttpCode(200)
+  async loginAdmin(@Body() body: AuthLoginApi) {
+    try {
+      await userValidation.login.validate(body, {
+        abortEarly: false,
+      });
+      const user = await this.userService.findOneByEmail(body.email);
+      if (!user.isAdmin)
+        throw new BadRequestException(errorMessage.api('user').NOT_ADMIN);
       return await this.authService.login(body);
     } catch (e) {
       throw new BadRequestException(e);

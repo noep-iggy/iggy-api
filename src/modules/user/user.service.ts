@@ -2,22 +2,28 @@ import { HouseService } from '../house/house.service';
 import { MediaService } from '../media/media.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { errorMessage } from '@/errors';
-import { RegisterApi, UpdateUserApi, UserDto, UserRoleEnum } from '@/types';
+import { TechRegisterApi, UpdateUserApi, UserDto, UserRoleEnum } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TaskService } from '../task/task.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private mediaService: MediaService,
+    @Inject(forwardRef(() => HouseService))
     private houseService: HouseService,
+    @Inject(forwardRef(() => TaskService))
+    private readonly taskService: TaskService,
   ) {}
 
   formatUser(userCripted: User): UserDto {
@@ -67,6 +73,18 @@ export class UserService {
     return user;
   }
 
+  async toggleAdminStatus(id: string): Promise<User> {
+    try {
+      const user = await this.getUser(id);
+      const updatedUser = await this.userRepository.update(id, {
+        isAdmin: !user.isAdmin,
+      });
+      return updatedUser.raw[0];
+    } catch (error) {
+      throw new BadRequestException(errorMessage.api('user').NOT_UPDATED, id);
+    }
+  }
+
   async findOneByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: [{ email }],
@@ -74,15 +92,16 @@ export class UserService {
     return user;
   }
 
-  async createUser(body: RegisterApi, role: UserRoleEnum): Promise<User> {
+  async createUser(body: TechRegisterApi, role: UserRoleEnum): Promise<User> {
     try {
-      const { email, firstName, password, ...user } = body;
+      const { email, firstName, isAdmin, password, ...user } = body;
       const encryptUser = encryptObject(user);
       return await this.userRepository.save({
         ...encryptUser,
         email,
         firstName,
         password,
+        isAdmin,
         role,
         profilePicture: null,
       });
@@ -107,28 +126,24 @@ export class UserService {
     }
   }
 
-  async updateUser(
-    body: UpdateUserApi,
-    id: string,
-    houseId: string,
-  ): Promise<User> {
+  async updateUser(body: UpdateUserApi, id: string): Promise<User> {
     try {
+      const user = await this.getUser(id);
+      if (!user)
+        throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
+
       if (body.firstName) {
         const possibleUser = await this.houseService.findUserByNameInHouse(
           body.firstName,
-          houseId,
+          user.house.id,
         );
         if (possibleUser)
           throw new BadRequestException(errorMessage.api('user').EXIST);
       }
-      const user = await this.getUser(id);
-      if (user.role) {
-        if (user.role === UserRoleEnum.CHILD)
-          throw new BadRequestException(errorMessage.api('user').NOT_ADMIN);
-      }
       const profilePictureMedia =
         body.profilePicture &&
         (await this.mediaService.getMediaById(body.profilePicture));
+
       await this.userRepository.update(id, {
         role: body.role ?? user.role,
         email: body.email ?? user.email,
@@ -150,9 +165,15 @@ export class UserService {
 
   async deleteUser(id: string): Promise<void> {
     try {
-      const user = await this.getUser(id);
-      await this.userRepository.delete(user.id);
+      const tasks = await this.taskService.findTaskByUserId(id);
+      await Promise.all(
+        tasks.map(async (task) => {
+          await this.taskService.deleteTask(task.id);
+        }),
+      );
+      await this.userRepository.delete(id);
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(errorMessage.api('user').NOT_FOUND, id);
     }
   }

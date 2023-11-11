@@ -1,5 +1,10 @@
 import { HouseService } from './../house/house.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Animal } from './animal.entity';
 import {
@@ -18,6 +23,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 export class AnimalService {
   constructor(
     @InjectRepository(Animal) private animalRepository: Repository<Animal>,
+    @Inject(forwardRef(() => HouseService))
     private readonly houseService: HouseService,
   ) {}
 
@@ -28,6 +34,15 @@ export class AnimalService {
       ...animal,
       tasks: animal.tasks ? animal.tasks.map((task) => task.id) : undefined,
     };
+  }
+
+  async getAnimals(): Promise<Animal[]> {
+    try {
+      const animals = await this.animalRepository.find();
+      return animals;
+    } catch (error) {
+      throw new BadRequestException(errorMessage.api('animal').NOT_FOUND);
+    }
   }
 
   async createAnimal(body: CreateAnimalApi, user: User): Promise<Animal> {
@@ -113,6 +128,7 @@ export class AnimalService {
     try {
       await this.animalRepository.delete({ id });
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(errorMessage.api('animal').NOT_DELETED);
     }
   }

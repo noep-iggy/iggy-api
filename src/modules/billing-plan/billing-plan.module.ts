@@ -5,13 +5,13 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { BillingPlanService } from './billing-plan.service';
-import { BillingPlanController } from './billing-plan.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { BillingPlan } from './billing-plan.entity';
 import { UserModule } from '../user/user.module';
 import { HouseModule } from '../house/house.module';
+import { BillingPlanController } from './billing-plan.controller';
 
 @Module({
   imports: [

@@ -5,10 +5,12 @@ import {
   Delete,
   Get,
   HttpCode,
+  Inject,
   Param,
   Patch,
   Post,
   UseGuards,
+  forwardRef,
 } from '@nestjs/common';
 import { AnimalService } from './animal.service';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
@@ -20,7 +22,10 @@ import { User } from '../user/user.entity';
 
 @Controller('animals')
 export class AnimalController {
-  constructor(private readonly service: AnimalService) {}
+  constructor(
+    @Inject(forwardRef(() => AnimalService))
+    private readonly service: AnimalService,
+  ) {}
 
   @Post()
   @HttpCode(201)

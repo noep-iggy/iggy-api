@@ -4,9 +4,11 @@ import {
   Controller,
   Get,
   HttpCode,
+  Inject,
   Patch,
   Post,
   UseGuards,
+  forwardRef,
 } from '@nestjs/common';
 import { HouseService } from './house.service';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
@@ -19,7 +21,6 @@ import { UserService } from '../user/user.service';
 import { JoinCodeService } from '../join-code/join-code.service';
 import { errorMessage } from '@/errors';
 import { AnimalService } from '../animal/animal.service';
-import { TaskService } from '../task/task.service';
 import { AffiliateService } from '../affiliate/affiliate.service';
 import { decryptObject } from '@/utils';
 import { BillingPlanService } from '../billing-plan/billing-plan.service';
@@ -27,11 +28,13 @@ import { BillingPlanService } from '../billing-plan/billing-plan.service';
 @Controller('house')
 export class HouseController {
   constructor(
+    @Inject(forwardRef(() => HouseService))
     private readonly service: HouseService,
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly joincodeService: JoinCodeService,
+    @Inject(forwardRef(() => AnimalService))
     private readonly animalService: AnimalService,
-    private readonly taskService: TaskService,
     private readonly affiliateService: AffiliateService,
     private readonly billingPlanService: BillingPlanService,
   ) {}
@@ -92,28 +95,7 @@ export class HouseController {
         abortEarly: false,
       });
 
-      let users = user.house.users;
-      if (body.userIds) {
-        users = await Promise.all(
-          body.userIds.map((userId) => this.userService.getUser(userId)),
-        );
-      }
-
-      let animals = user.house.animals;
-      if (body.animalIds) {
-        animals = await Promise.all(
-          body.animalIds.map((animalId) =>
-            this.animalService.findOneById(animalId),
-          ),
-        );
-      }
-
-      const house = await this.service.updateHouse({
-        ...user.house,
-        ...body,
-        users,
-        animals,
-      });
+      const house = await this.service.updateHouse(body, user.house.id);
       return this.service.formatHouse(house);
     } catch (e) {
       throw new BadRequestException(e.errors);

@@ -8,6 +8,8 @@ import {
   Patch,
   BadRequestException,
   Param,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiKeyGuard } from 'src/decorators/api-key.decorator';
@@ -22,7 +24,9 @@ import { errorMessage } from '@/errors';
 @Controller('users')
 export class UserController {
   constructor(
+    @Inject(forwardRef(() => UserService))
     private service: UserService,
+    @Inject(forwardRef(() => TaskService))
     private taskService: TaskService,
   ) {}
 
@@ -56,11 +60,7 @@ export class UserController {
       await userValidation.update.validate(body, {
         abortEarly: false,
       });
-      const userUpdated = await this.service.updateUser(
-        body,
-        user.id,
-        user.house.id,
-      );
+      const userUpdated = await this.service.updateUser(body, user.id);
       return this.service.formatUser(userUpdated);
     } catch (e) {
       throw new BadRequestException(e.errors);
@@ -79,13 +79,19 @@ export class UserController {
   @HttpCode(204)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  deleteUserById(@GetCurrentUser() user: User, @Param('id') id: string): void {
+  async deleteUserById(
+    @GetCurrentUser() user: User,
+    @Param('id') id: string,
+  ): Promise<void> {
     try {
       if (user.role !== UserRoleEnum.PARENT)
         throw new BadRequestException(errorMessage.api('user').NOT_ADMIN);
+      const possibleUser = await this.service.getUser(id);
+      if (!possibleUser)
+        throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
       this.service.deleteUser(id);
     } catch (e) {
-      throw new BadRequestException(e.errors);
+      throw new BadRequestException(e);
     }
   }
 
@@ -104,14 +110,11 @@ export class UserController {
       await userValidation.update.validate(body, {
         abortEarly: false,
       });
-      const userUpdated = await this.service.updateUser(
-        body,
-        id,
-        user.house.id,
-      );
+      const userUpdated = await this.service.updateUser(body, id);
       return this.service.formatUser(userUpdated);
     } catch (e) {
-      throw new BadRequestException(e.errors);
+      console.log(e);
+      throw new BadRequestException(e);
     }
   }
 }

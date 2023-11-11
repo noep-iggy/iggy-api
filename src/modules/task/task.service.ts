@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Task } from './task.entity';
 import { CreateTaskApi, TaskDto, TaskStatusEnum, UpdateTaskApi } from '@/types';
@@ -15,9 +20,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 export class TaskService {
   constructor(
     @InjectRepository(Task) private taskRepository: Repository<Task>,
+    @Inject(forwardRef(() => AnimalService))
     private readonly animalService: AnimalService,
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly mediaService: MediaService,
+    @Inject(forwardRef(() => RecurrenceService))
     private readonly recurrenceService: RecurrenceService,
   ) {}
 
@@ -189,13 +197,8 @@ export class TaskService {
         pictureId ? this.mediaService.getMediaById(pictureId) : null,
       ]);
 
+      const taskCrypted = encryptObject(taskToCrypt);
       const updatedTaskData = {
-        title: taskToCrypt.title
-          ? encryptObject(taskToCrypt.title)
-          : task.title,
-        description: taskToCrypt.description
-          ? encryptObject(taskToCrypt.description)
-          : task.description,
         recurrence: recurrenceToUpdate ?? task.recurrence,
         date: date ? new Date(date) : task.date,
         users: userIds ? users : task.users,
@@ -210,6 +213,7 @@ export class TaskService {
 
       const taskUpdated = await this.taskRepository.save({
         ...task,
+        ...taskCrypted,
         ...updatedTaskData,
       });
 

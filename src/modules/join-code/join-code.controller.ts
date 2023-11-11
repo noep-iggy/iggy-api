@@ -5,7 +5,6 @@ import {
   HttpCode,
   UseGuards,
 } from '@nestjs/common';
-import { UserService } from '../user/user.service';
 import { JoinCodeService } from './join-code.service';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
@@ -16,10 +15,7 @@ import { errorMessage } from '@/errors';
 
 @Controller('join-code')
 export class JoincodeController {
-  constructor(
-    private readonly service: JoinCodeService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly service: JoinCodeService) {}
 
   @Get('create/parent')
   @HttpCode(200)

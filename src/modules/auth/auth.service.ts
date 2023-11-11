@@ -1,26 +1,34 @@
-import { JoinCodeService } from './../join-code/join-code.service';
 import { HouseService } from './../house/house.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import * as bcrypt from 'bcryptjs';
 import { UserService } from '../user/user.service';
 import { AuthValidation } from './auth.validation';
 import { errorMessage } from '@/errors';
-import { AuthLoginApi, JoinApi, RegisterApi, UserRoleEnum } from '@/types';
+import {
+  AuthLoginApi,
+  JoinApi,
+  RegisterApi,
+  TechRegisterApi,
+  UserRoleEnum,
+} from '@/types';
 import { House } from '../house/house.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UserService))
     private userRepository: UserService,
     private authValidation: AuthValidation,
     private jwtService: JwtService,
+    @Inject(forwardRef(() => HouseService))
     private houseService: HouseService,
-    private joinCodeService: JoinCodeService,
   ) {}
 
   async login(body: AuthLoginApi) {
@@ -76,7 +84,7 @@ export class AuthService {
     };
   }
 
-  async register(body: RegisterApi) {
+  async register(body: TechRegisterApi) {
     const { password, email } = body;
     const possibleUser = await this.userRepository.findOneByEmail(email);
     if (possibleUser)

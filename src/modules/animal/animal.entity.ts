@@ -32,6 +32,7 @@ export class Animal extends BaseEntity {
 
   @ManyToMany(() => Animal, (animal) => animal.tasks, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   tasks: Task[];
 }
