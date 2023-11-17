@@ -7,3 +7,4 @@ export * from './Task';
 export * from './Recurrence';
 export * from './BillingPlan';
 export * from './Affiliate';
+export * from './SearchParams';

@@ -15,4 +15,5 @@ export interface UserDto extends BaseDto {
   profilePicture?: MediaDto;
   house?: HouseDto;
   tasks?: string[];
+  isAdmin: boolean;
 }

@@ -5,12 +5,13 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Raw, Repository } from 'typeorm';
 import { Animal } from './animal.entity';
 import {
   AnimalDto,
   AnimalStatusEnum,
   CreateAnimalApi,
+  SearchParams,
   UpdateAnimalApi,
 } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
@@ -32,14 +33,34 @@ export class AnimalService {
     const animal = decryptObject(animalCrypted);
     return {
       ...animal,
+      house: this.houseService.formatHouse(animal.house),
       tasks: animal.tasks ? animal.tasks.map((task) => task.id) : undefined,
     };
   }
 
-  async getAnimals(): Promise<Animal[]> {
+  async getAnimals(searchParams: SearchParams): Promise<Animal[]> {
     try {
-      const animals = await this.animalRepository.find();
-      return animals;
+      const order = {
+        [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
+      };
+      const conditions: FindManyOptions<Animal> = {
+        where: {
+          name: Raw(
+            (alias) =>
+              `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
+          ),
+        },
+        relations: ['house'],
+        order: {
+          ...order,
+          house: {
+            name: searchParams.orderType ?? 'DESC',
+          },
+        },
+        skip: searchParams.page * searchParams.pageSize,
+        take: searchParams.pageSize,
+      };
+      return await this.animalRepository.find(conditions);
     } catch (error) {
       throw new BadRequestException(errorMessage.api('animal').NOT_FOUND);
     }
@@ -47,12 +68,13 @@ export class AnimalService {
 
   async createAnimal(body: CreateAnimalApi, user: User): Promise<Animal> {
     try {
-      const { bornDate, ...animal } = body;
+      const { bornDate, name, ...animal } = body;
       const encryptAnimal = encryptObject({
         ...animal,
       });
       const animalUpdated = await this.animalRepository.save({
         ...encryptAnimal,
+        name: name,
         bornDate: new Date(bornDate),
         status: AnimalStatusEnum.NORMAL,
       });
@@ -85,16 +107,18 @@ export class AnimalService {
   async findOneById(id: string): Promise<Animal | null> {
     const animal = await this.animalRepository.findOne({
       where: [{ id }],
+      relations: ['house'],
     });
     return animal;
   }
 
   async updateAnimal(body: UpdateAnimalApi, id: string): Promise<Animal> {
     try {
-      const encrypBody = encryptObject(body);
+      const { bornDate, name, status, ...animal } = body;
+      const encrypBody = encryptObject(animal);
       await this.animalRepository.update(
         { id },
-        { ...encrypBody, updatedAt: new Date() },
+        { ...encrypBody, bornDate, name, status, updatedAt: new Date() },
       );
       return await this.animalRepository.findOneBy({ id });
     } catch (error) {

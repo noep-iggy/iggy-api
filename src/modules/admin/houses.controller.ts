@@ -16,9 +16,10 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
 import { User } from '../user/user.entity';
 import { errorMessage } from '@/errors';
-import { UpdateHouseApi } from '@/types';
+import { SearchParams, UpdateHouseApi } from '@/types';
 import { houseValidation } from '@/validations';
 import { HouseService } from '../house/house.service';
+import { GetSearchParams } from '@/decorators/get-search-params.decorator';
 
 @Controller('admin')
 export class AdminHousesController {
@@ -31,12 +32,15 @@ export class AdminHousesController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async getUsers(@GetCurrentUser() user: User) {
+  async getUsers(
+    @GetCurrentUser() user: User,
+    @GetSearchParams() searchParams: SearchParams,
+  ) {
     try {
       if (!user.isAdmin)
         throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
       return Promise.all(
-        (await this.houseService.getHouses()).map((user) =>
+        (await this.houseService.getHouses(searchParams)).map((user) =>
           this.houseService.formatHouse(user),
         ),
       );

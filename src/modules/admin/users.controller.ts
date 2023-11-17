@@ -18,8 +18,9 @@ import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
 import { User } from '../user/user.entity';
 import { errorMessage } from '@/errors';
 import { UserService } from '../user/user.service';
-import { UpdateUserApi } from '@/types';
+import { SearchParams, UpdateUserApi } from '@/types';
 import { userValidation } from '@/validations';
+import { GetSearchParams } from '@/decorators/get-search-params.decorator';
 
 @Controller('admin')
 export class AdminUsersController {
@@ -62,12 +63,15 @@ export class AdminUsersController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async getUsers(@GetCurrentUser() user: User) {
+  async getUsers(
+    @GetCurrentUser() user: User,
+    @GetSearchParams() searchParams: SearchParams,
+  ) {
     try {
       if (!user.isAdmin)
         throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
       return Promise.all(
-        (await this.userService.getUsers()).map((user) =>
+        (await this.userService.getUsers(searchParams)).map((user) =>
           this.userService.formatUser(user),
         ),
       );

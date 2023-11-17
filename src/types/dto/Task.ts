@@ -1,6 +1,8 @@
+import { AnimalDto } from './Animal';
 import { BaseDto } from './BaseDto';
 import { MediaDto } from './Media';
 import { RecurrenceDto } from './Recurrence';
+import { UserDto } from './User';
 
 export enum TaskStatusEnum {
   TODO = 'TODO',
@@ -16,7 +18,7 @@ export interface TaskDto extends BaseDto {
   message?: string;
   recurrence?: RecurrenceDto;
   date: Date;
-  users: string[];
-  animals: string[];
+  users: UserDto[];
+  animals: AnimalDto[];
   picture?: MediaDto;
 }

@@ -1,25 +1,27 @@
+import { errorMessage } from '@/errors';
+import {
+  BillingPlanTypeEnum,
+  CreateHouseApi,
+  HouseDto,
+  SearchParams,
+  UpdateHouseApi,
+} from '@/types';
+import { decryptObject, encryptObject } from '@/utils';
 import {
   BadRequestException,
   Inject,
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { House } from './house.entity';
-import {
-  BillingPlanTypeEnum,
-  CreateHouseApi,
-  HouseDto,
-  UpdateHouseApi,
-} from '@/types';
-import { decryptObject, encryptObject } from '@/utils';
-import { User } from '../user/user.entity';
-import { errorMessage } from '@/errors';
-import { JoinCodeService } from '../join-code/join-code.service';
+import { FindManyOptions, Raw, Repository } from 'typeorm';
 import { Animal } from '../animal/animal.entity';
-import { BillingPlanService } from '../billing-plan/billing-plan.service';
-import { UserService } from '../user/user.service';
 import { AnimalService } from '../animal/animal.service';
+import { BillingPlan } from '../billing-plan/billing-plan.entity';
+import { BillingPlanService } from '../billing-plan/billing-plan.service';
+import { JoinCodeService } from '../join-code/join-code.service';
+import { User } from '../user/user.entity';
+import { UserService } from '../user/user.service';
+import { House } from './house.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class HouseService {
@@ -40,11 +42,15 @@ export class HouseService {
     return {
       ...house,
       billingPlan: house?.billingPlan?.type,
-      users: house?.users ? house.users.map((user) => user.id) : undefined,
+      users: house?.users
+        ? house.users.map((user) => this.userService.formatUser(user))
+        : undefined,
       joinCode: this.joinCodeService.formatJoinCode(house?.joinCode),
       animals:
         house?.animals && house.animals.length > 0
-          ? house.animals.map((animal) => animal.id)
+          ? house.animals.map((animal) =>
+              this.animalService.formatAnimal(animal),
+            )
           : undefined,
     };
   }
@@ -54,38 +60,55 @@ export class HouseService {
       return await this.houseRepository.findOne({
         where: { id: _id },
         relations: ['users', 'animals', 'joinCode', 'billingPlan'],
-        select: {
-          users: {
-            id: true,
-          },
-          animals: {
-            id: true,
-          },
-          billingPlan: {
-            type: true,
-          },
-        },
       });
     } catch (error) {
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     }
   }
 
-  async getHouses(): Promise<House[]> {
+  async getHouses(searchParams: SearchParams): Promise<House[]> {
     try {
-      return await this.houseRepository.find({
+      const order = {
+        [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
+      };
+      const conditions: FindManyOptions<House> = {
+        where: {
+          name: Raw(
+            (alias) =>
+              `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
+          ),
+        },
         relations: ['users', 'animals', 'joinCode', 'billingPlan'],
-      });
+        order: {
+          ...order,
+          users: {
+            firstName: searchParams.orderType ?? 'DESC',
+          },
+          animals: {
+            name: searchParams.orderType ?? 'DESC',
+          },
+          billingPlan: {
+            type: searchParams.orderType ?? 'DESC',
+          },
+        },
+        skip: searchParams.page * searchParams.pageSize,
+        take: searchParams.pageSize,
+      };
+      const houses = await this.houseRepository.find(conditions);
+      return houses;
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     }
   }
 
   async createHouse(body: CreateHouseApi, user: User): Promise<House> {
     try {
-      const encryptHouse = encryptObject(body);
+      const { name, ...rest } = body;
+      const encryptHouse = encryptObject(rest);
       const house = await this.houseRepository.save({
         ...encryptHouse,
+        name,
         users: [user],
       });
       await this.billingPlanService.addHouseToBillingPlan(
@@ -117,13 +140,23 @@ export class HouseService {
           ),
         );
       }
-      const { name } = body;
-      const encryptHouse = encryptObject({ name });
+
+      let billingPlan: BillingPlan;
+      if (body.billingPlan) {
+        billingPlan = await this.billingPlanService.getBillingPlanByType(
+          body.billingPlan,
+        );
+      }
+
+      const { name, ...rest } = body;
+      const encryptHouse = encryptObject(rest);
       await this.houseRepository.save({
         ...house,
         ...encryptHouse,
+        name: name ?? house.name,
         users: users ?? house.users,
         animals: animals ?? house.animals,
+        billingPlan: billingPlan ?? house.billingPlan,
       });
       return await this.getHouse(houseId);
     } catch (error) {

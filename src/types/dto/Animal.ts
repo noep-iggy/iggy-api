@@ -1,4 +1,5 @@
 import { BaseDto } from './BaseDto';
+import { HouseDto } from './House';
 
 export enum AnimalGenderEnum {
   MASCULINE = 'MASCULINE',
@@ -24,5 +25,6 @@ export interface AnimalDto extends BaseDto {
   gender: AnimalGenderEnum;
   type: AnimalTypeEnum;
   status: AnimalStatusEnum;
+  house: HouseDto;
   tasks?: string[];
 }

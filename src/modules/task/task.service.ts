@@ -1,19 +1,25 @@
+import { errorMessage } from '@/errors';
+import {
+  CreateTaskApi,
+  SearchParams,
+  TaskDto,
+  TaskStatusEnum,
+  UpdateTaskApi,
+} from '@/types';
+import { decryptObject, encryptObject } from '@/utils';
 import {
   BadRequestException,
   Inject,
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Task } from './task.entity';
-import { CreateTaskApi, TaskDto, TaskStatusEnum, UpdateTaskApi } from '@/types';
-import { decryptObject, encryptObject } from '@/utils';
-import { AnimalService } from '../animal/animal.service';
-import { errorMessage } from '@/errors';
-import { UserService } from '../user/user.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { FindManyOptions, Raw, Repository } from 'typeorm';
+import { AnimalService } from '../animal/animal.service';
 import { MediaService } from '../media/media.service';
 import { RecurrenceService } from '../recurrence/recurrence.service';
+import { UserService } from '../user/user.service';
+import { Task } from './task.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -34,8 +40,10 @@ export class TaskService {
     const task = decryptObject(taskCrypted);
     return {
       ...task,
-      users: task.users.map((user) => user.id),
-      animals: task.animals.map((animal) => animal.id),
+      users: task.users.map((user) => this.userService.formatUser(user)),
+      animals: task.animals.map((animal) =>
+        this.animalService.formatAnimal(animal),
+      ),
       picture: this.mediaService.formatMedia(task.picture),
       recurrence: task.recurrence ? task.recurrence : undefined,
     };
@@ -43,7 +51,7 @@ export class TaskService {
 
   async createTask(body: CreateTaskApi): Promise<Task> {
     try {
-      const { recurrence, date, userIds, animalIds, ...task } = body;
+      const { recurrence, date, userIds, title, animalIds, ...task } = body;
       const encryptTask = encryptObject(task);
       const animals = await Promise.all(
         animalIds.map((animalId) => this.animalService.findOneById(animalId)),
@@ -57,6 +65,7 @@ export class TaskService {
         date: new Date(date),
         users,
         animals,
+        title,
         status: TaskStatusEnum.TODO,
       });
       if (recurrence) {
@@ -69,6 +78,46 @@ export class TaskService {
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_CREATED);
+    }
+  }
+
+  searchConditions(searchParams?: SearchParams): FindManyOptions<Task> {
+    if (!searchParams) return { relations: ['users', 'animals', 'recurrence'] };
+    const order = {
+      [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
+    };
+    return {
+      where: {
+        title: Raw(
+          (alias) =>
+            `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
+        ),
+      },
+      relations: ['users', 'animals', 'recurrence'],
+      order: {
+        ...order,
+        users: {
+          firstName: searchParams.orderType ?? 'DESC',
+        },
+        animals: {
+          name: searchParams.orderType ?? 'DESC',
+        },
+        recurrence: {
+          type: searchParams.orderType ?? 'DESC',
+        },
+      },
+      skip: searchParams.page * searchParams.pageSize,
+      take: searchParams.pageSize,
+    };
+  }
+
+  async getTasks(searchParams: SearchParams): Promise<Task[]> {
+    try {
+      return await this.taskRepository.find(
+        this.searchConditions(searchParams),
+      );
+    } catch (error) {
+      throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
     }
   }
 
@@ -85,11 +134,15 @@ export class TaskService {
     }
   }
 
-  async findTaskByUserId(userId: string): Promise<Task[]> {
+  async findTaskByUserId(
+    userId: string,
+    searchParams?: SearchParams,
+  ): Promise<Task[]> {
     try {
+      const conditions = this.searchConditions(searchParams);
       const tasks = await this.taskRepository.find({
+        ...conditions,
         where: { users: { id: userId } },
-        relations: ['users', 'animals', 'recurrence'],
       });
       return tasks;
     } catch (error) {
@@ -98,11 +151,14 @@ export class TaskService {
     }
   }
 
-  async findTaskByHouseId(houseId: string): Promise<Task[]> {
+  async findTaskByHouseId(
+    houseId: string,
+    searchParams?: SearchParams,
+  ): Promise<Task[]> {
     try {
       const users = await this.userService.findUsersByHouseId(houseId);
       const tasks = await Promise.all(
-        users.map((user) => this.findTaskByUserId(user.id)),
+        users.map((user) => this.findTaskByUserId(user.id, searchParams)),
       );
 
       return tasks.flat().filter((task, index, self) => {
@@ -143,13 +199,8 @@ export class TaskService {
         where: { id: taskId },
         relations: ['recurrence'],
       });
-      const taskUpdated = await this.taskRepository.save({
-        ...task,
-        recurrence: null,
-        updatedAt: new Date(),
-      });
       await this.recurrenceService.deleteRecurrence(task.recurrence.id);
-      return taskUpdated;
+      return await this.getTaskById(taskId);
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_UPDATED);
@@ -163,8 +214,15 @@ export class TaskService {
         relations: ['users', 'animals', 'recurrence'],
       });
 
-      const { date, userIds, animalIds, pictureId, status, ...taskToCrypt } =
-        body;
+      const {
+        date,
+        userIds,
+        animalIds,
+        title,
+        pictureId,
+        status,
+        ...taskToCrypt
+      } = body;
 
       let recurrenceToUpdate = null;
       if (body.recurrence) {
@@ -201,6 +259,7 @@ export class TaskService {
       const updatedTaskData = {
         recurrence: recurrenceToUpdate ?? task.recurrence,
         date: date ? new Date(date) : task.date,
+        title: title ?? task.title,
         users: userIds ? users : task.users,
         animals: animalIds ? animals : task.animals,
         status: date ? TaskStatusEnum.TODO : status ?? task.status,

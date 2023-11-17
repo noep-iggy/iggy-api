@@ -1,6 +1,7 @@
 import { errorMessage } from '@/errors';
 import {
   AnimalGenderEnum,
+  AnimalStatusEnum,
   AnimalTypeEnum,
   CreateAnimalApi,
   UpdateAnimalApi,
@@ -56,6 +57,15 @@ const update: yup.ObjectSchema<UpdateAnimalApi> = yup.object({
     .optional()
     .default(undefined)
     .typeError(errorMessage.fields('type').NOT_STRING),
+  status: yup
+    .mixed<AnimalStatusEnum>()
+    .oneOf(
+      Object.values(AnimalStatusEnum),
+      errorMessage.fields('status').NOT_VALID,
+    )
+    .optional()
+    .default(undefined)
+    .typeError(errorMessage.fields('status').NOT_STRING),
 });
 
 export const animalValidation = {

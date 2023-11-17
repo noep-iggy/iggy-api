@@ -14,9 +14,10 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
 import { User } from '../user/user.entity';
 import { errorMessage } from '@/errors';
-import { UpdateHouseApi } from '@/types';
+import { SearchParams, UpdateHouseApi } from '@/types';
 import { houseValidation } from '@/validations';
 import { TaskService } from '../task/task.service';
+import { GetSearchParams } from '@/decorators/get-search-params.decorator';
 
 @Controller('admin')
 export class AdminTasksController {
@@ -29,11 +30,36 @@ export class AdminTasksController {
   async getUsers(
     @GetCurrentUser() user: User,
     @Param('houseId') houseId: string,
+    @GetSearchParams() searchParams: SearchParams,
   ) {
     try {
       if (!user.isAdmin)
         throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
-      const tasks = await this.taskService.findTaskByHouseId(houseId);
+      const tasks = await this.taskService.findTaskByHouseId(
+        houseId,
+        searchParams,
+      );
+      return Promise.all(
+        tasks.map((task) => this.taskService.formatTask(task)),
+      );
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException(e);
+    }
+  }
+
+  @Get('tasks')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getAllTasks(
+    @GetCurrentUser() user: User,
+    @GetSearchParams() searchParams: SearchParams,
+  ) {
+    try {
+      if (!user.isAdmin)
+        throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
+      const tasks = await this.taskService.getTasks(searchParams);
       return Promise.all(
         tasks.map((task) => this.taskService.formatTask(task)),
       );
@@ -53,6 +79,26 @@ export class AdminTasksController {
         throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
       return this.taskService.formatTask(
         await this.taskService.getTaskById(id),
+      );
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException(e);
+    }
+  }
+
+  @Delete('tasks/:id/remove-recurrence')
+  @HttpCode(204)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async removeRecurrence(
+    @GetCurrentUser() user: User,
+    @Param('id') id: string,
+  ) {
+    try {
+      if (!user.isAdmin)
+        throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
+      return this.taskService.formatTask(
+        await this.taskService.removeRecurrence(id),
       );
     } catch (e) {
       console.log(e);

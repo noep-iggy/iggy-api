@@ -7,10 +7,16 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Raw, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { errorMessage } from '@/errors';
-import { TechRegisterApi, UpdateUserApi, UserDto, UserRoleEnum } from '@/types';
+import {
+  SearchParams,
+  TechRegisterApi,
+  UpdateUserApi,
+  UserDto,
+  UserRoleEnum,
+} from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TaskService } from '../task/task.service';
@@ -43,12 +49,33 @@ export class UserService {
       updatedAt: user.updatedAt,
       createdAt: user.createdAt,
       profilePicture: this.mediaService.formatMedia(user?.profilePicture),
+      isAdmin: user.isAdmin,
     };
   }
 
-  async getUsers(): Promise<User[]> {
+  async getUsers(searchParams: SearchParams): Promise<User[]> {
     try {
-      return await this.userRepository.find();
+      const order = {
+        [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
+      };
+      const conditions: FindManyOptions<User> = {
+        where: {
+          firstName: Raw(
+            (alias) =>
+              `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
+          ),
+        },
+        relations: ['house', 'profilePicture'],
+        order: {
+          ...order,
+          house: {
+            name: searchParams.orderType ?? 'DESC',
+          },
+        },
+        skip: searchParams.page * searchParams.pageSize,
+        take: searchParams.pageSize,
+      };
+      return await this.userRepository.find(conditions);
     } catch (error) {
       throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
     }
@@ -76,11 +103,12 @@ export class UserService {
   async toggleAdminStatus(id: string): Promise<User> {
     try {
       const user = await this.getUser(id);
-      const updatedUser = await this.userRepository.update(id, {
+      await this.userRepository.update(id, {
         isAdmin: !user.isAdmin,
       });
-      return updatedUser.raw[0];
+      return await this.getUser(id);
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(errorMessage.api('user').NOT_UPDATED, id);
     }
   }
@@ -94,7 +122,7 @@ export class UserService {
 
   async createUser(body: TechRegisterApi, role: UserRoleEnum): Promise<User> {
     try {
-      const { email, firstName, isAdmin, password, ...user } = body;
+      const { email, firstName, lastName, isAdmin, password, ...user } = body;
       const encryptUser = encryptObject(user);
       return await this.userRepository.save({
         ...encryptUser,
@@ -102,6 +130,7 @@ export class UserService {
         firstName,
         password,
         isAdmin,
+        lastName,
         role,
         profilePicture: null,
       });
@@ -132,7 +161,7 @@ export class UserService {
       if (!user)
         throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
 
-      if (body.firstName) {
+      if (body.firstName && user.house) {
         const possibleUser = await this.houseService.findUserByNameInHouse(
           body.firstName,
           user.house.id,
