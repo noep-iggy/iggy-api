@@ -133,6 +133,7 @@ export class MediaService {
       await this.mediaRepository.remove(media);
       fs.unlinkSync(this.getLocalFilePathFromUrl(media.url));
     } catch (e) {
+      console.log(e);
       throw new BadRequestException(errorMessage.api('media').NOT_DELETED);
     }
   }

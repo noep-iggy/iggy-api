@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { errorMessage } from '@/errors';
 import {
   BadRequestException,
   Controller,
@@ -18,7 +19,6 @@ import { v4 as uuid } from 'uuid';
 import { GetCurrentUser } from '../../decorators/get-current-user.decorator';
 import { MediaService } from '../media/media.service';
 import { User } from '../user/user.entity';
-import { errorMessage } from '@/errors';
 
 export function replaceAll(str: string, find: string, replace: string) {
   return str.replace(new RegExp(find, 'g'), replace);
@@ -51,7 +51,7 @@ export class FileUploadController {
       }),
       limits: { fileSize: 104857600 }, // 100Mb:
       fileFilter: (req, file, callback) => {
-        const allowedExtensions = /\.(jpg|jpeg|png|pdf)$/;
+        const allowedExtensions = /\.(jpg|jpeg|png|pdf|webp)$/;
         const extension = allowedExtensions.exec(file.originalname);
         if (!extension) {
           return callback(

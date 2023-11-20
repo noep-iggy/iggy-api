@@ -1,8 +1,8 @@
 import { BaseDto } from './BaseDto';
 
 export enum BillingPlanTypeEnum {
-  FREE = 'FREE',
-  PREMIUM = 'PREMIUM',
+  MONTHLY = 'MONTHLY',
+  FOR_LIFE = 'FOR_LIFE',
 }
 
 export interface BillingPlanDto extends BaseDto {

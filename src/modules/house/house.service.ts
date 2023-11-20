@@ -13,6 +13,7 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Raw, Repository } from 'typeorm';
 import { Animal } from '../animal/animal.entity';
 import { AnimalService } from '../animal/animal.service';
@@ -22,7 +23,6 @@ import { JoinCodeService } from '../join-code/join-code.service';
 import { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { House } from './house.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class HouseService {
   constructor(
@@ -112,7 +112,7 @@ export class HouseService {
         users: [user],
       });
       await this.billingPlanService.addHouseToBillingPlan(
-        BillingPlanTypeEnum.FREE,
+        BillingPlanTypeEnum.MONTHLY,
         house.id,
       );
       return house;

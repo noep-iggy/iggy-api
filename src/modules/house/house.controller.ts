@@ -1,3 +1,9 @@
+import { ApiKeyGuard } from '@/decorators/api-key.decorator';
+import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
+import { errorMessage } from '@/errors';
+import { BillingPlanTypeEnum, CreateHouseApi, UpdateHouseApi } from '@/types';
+import { decryptObject } from '@/utils';
+import { houseValidation } from '@/validations';
 import {
   BadRequestException,
   Body,
@@ -10,20 +16,14 @@ import {
   UseGuards,
   forwardRef,
 } from '@nestjs/common';
-import { HouseService } from './house.service';
-import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
-import { BillingPlanTypeEnum, CreateHouseApi, UpdateHouseApi } from '@/types';
-import { User } from '../user/user.entity';
-import { houseValidation } from '@/validations';
-import { UserService } from '../user/user.service';
-import { JoinCodeService } from '../join-code/join-code.service';
-import { errorMessage } from '@/errors';
-import { AnimalService } from '../animal/animal.service';
 import { AffiliateService } from '../affiliate/affiliate.service';
-import { decryptObject } from '@/utils';
+import { AnimalService } from '../animal/animal.service';
 import { BillingPlanService } from '../billing-plan/billing-plan.service';
+import { JoinCodeService } from '../join-code/join-code.service';
+import { User } from '../user/user.entity';
+import { UserService } from '../user/user.service';
+import { HouseService } from './house.service';
 
 @Controller('house')
 export class HouseController {
@@ -57,7 +57,7 @@ export class HouseController {
         );
       }
       const billingPlan = await this.billingPlanService.getBillingPlanByType(
-        BillingPlanTypeEnum.FREE,
+        BillingPlanTypeEnum.MONTHLY,
       );
       if (!billingPlan) {
         throw new BadRequestException(

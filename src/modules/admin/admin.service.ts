@@ -1,3 +1,5 @@
+import { errorMessage } from '@/errors';
+import { UserRoleEnum } from '@/types';
 import {
   BadRequestException,
   Inject,
@@ -7,8 +9,6 @@ import {
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../user/user.entity';
-import { errorMessage } from '@/errors';
-import { UserRoleEnum } from '@/types';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -29,6 +29,13 @@ export class AdminService {
       role: UserRoleEnum.PARENT,
     };
     try {
+      const possibleAdmin = await this.adminRepository.find({
+        where: { isAdmin: true },
+      });
+      if (possibleAdmin)
+        throw new BadRequestException(
+          errorMessage.api('admin').ALREADY_CREATED,
+        );
       const admin = await this.adminRepository.findOne({
         where: [{ email: adminBody.email }],
       });
@@ -39,7 +46,7 @@ export class AdminService {
         return admin;
       }
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('admin').NOT_FOUND);
+      throw new BadRequestException(error);
     }
   }
 }

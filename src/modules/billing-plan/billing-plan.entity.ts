@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, OneToMany } from 'typeorm';
+import { BillingPlanTypeEnum } from '../../types';
 import { BaseEntity } from '../base.entity';
 import { House } from '../house/house.entity';
-import { BillingPlanTypeEnum } from '../../types';
 
 @Entity()
 export class BillingPlan extends BaseEntity {
@@ -11,7 +11,9 @@ export class BillingPlan extends BaseEntity {
   @Column()
   description: string;
 
-  @Column()
+  @Column({
+    type: 'float',
+  })
   price: number;
 
   @OneToMany(() => House, (house) => house.billingPlan, {
