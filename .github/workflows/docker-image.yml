@@ -8,10 +8,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-${{date +%F_%T}}
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Get curent date and time
+        id: date
+        run: echo ::set-env name=DATE::$(date +%F_%T)
+
       - name: docker login
         env:
           DOCKER_USER: ${{secrets.DOCKER_USER}}
@@ -19,11 +22,12 @@ jobs:
           DOCKER_REPO: ${{secrets.DOCKER_REPO}}
         run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
       - name: Build the Docker image
-        run: docker buildx build . --file Dockerfile --tag ${{secrets.DOCKER_REPO}}:${{date +%F_%T}}
+        run: docker buildx build . --file Dockerfile --tag ${{secrets.DOCKER_REPO}}:${{steps.date.outputs.date}}
 
       - name: Tag the Docker image
-        run: docker tag ${{secrets.DOCKER_REPO}}:${{date +%F_%T}} ${{secrets.DOCKER_USER}}/${{secrets.DOCKER_REPO}}:${{date +%F_%T}}
+        run: docker tag ${{secrets.DOCKER_REPO}}:${{steps.date.outputs.date}} ${{secrets.DOCKER_USER}}/${{secrets.DOCKER_REPO}}:${{steps.date.outputs.date}}
 
       - name: Docker push
-        run: docker push ${{secrets.DOCKER_USER}}/${{secrets.DOCKER_REPO}}:${{date +%F_%T}}
+        run: docker push ${{secrets.DOCKER_USER}}/${{secrets.DOCKER_REPO}}:${{steps.date.outputs.date}}
