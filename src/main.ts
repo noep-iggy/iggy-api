@@ -3,7 +3,11 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const whitelist = ['http://localhost:3000', 'http://localhost:8000'];
+  const whitelist = [
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'http://noephilippe.freeboxos.fr:8000/',
+  ];
   app.enableCors({
     origin: function (origin, callback) {
       if (!origin || whitelist.indexOf(origin) !== -1) {
