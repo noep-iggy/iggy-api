@@ -1,3 +1,9 @@
+import { ApiKeyGuard } from '@/decorators/api-key.decorator';
+import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
+import { GetSearchParams } from '@/decorators/get-search-params.decorator';
+import { errorMessage } from '@/errors';
+import { CreateAffiliateApi, SearchParams, UpdateAffiliateApi } from '@/types';
+import { affiliateValidation } from '@/validations';
 import {
   BadRequestException,
   Body,
@@ -10,17 +16,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AffiliateService } from '../affiliate/affiliate.service';
-import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import {
-  AnimalTypeEnum,
-  CreateAffiliateApi,
-  UpdateAffiliateApi,
-} from '@/types';
-import { errorMessage } from '@/errors';
-import { affiliateValidation } from '@/validations';
-import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
+import { AffiliateService } from '../affiliate/affiliate.service';
 import { User } from '../user/user.entity';
 
 @Controller('admin')
@@ -31,36 +28,14 @@ export class AdminAffiliatesController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async getAffiliates(@GetCurrentUser() user: User) {
-    try {
-      if (!user.isAdmin)
-        throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
-      const affiliates = await this.service.getAffiliates();
-      return affiliates.map((affiliate) =>
-        this.service.formatAffiliate(affiliate),
-      );
-    } catch (e) {
-      throw new BadRequestException(e);
-    }
-  }
-
-  @Get('affiliates/:animalType')
-  @HttpCode(200)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  async getAffiliateByAnimalType(
-    @Param('animalType') animalType: AnimalTypeEnum,
+  async getAffiliates(
     @GetCurrentUser() user: User,
+    @GetSearchParams() searchParams: SearchParams,
   ) {
     try {
       if (!user.isAdmin)
         throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
-      if (AnimalTypeEnum[animalType] === undefined)
-        throw new BadRequestException(
-          errorMessage.api('billingPlan').NOT_FOUND,
-        );
-      const affiliates =
-        await this.service.getAffiliateByAnimalType(animalType);
+      const affiliates = await this.service.getAffiliates(searchParams);
       return affiliates.map((affiliate) =>
         this.service.formatAffiliate(affiliate),
       );

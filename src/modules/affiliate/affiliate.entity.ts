@@ -1,6 +1,7 @@
-import { Column, Entity } from 'typeorm';
-import { BaseEntity } from '../base.entity';
 import { AnimalTypeEnum } from '@/types';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { BaseEntity } from '../base.entity';
+import { Media } from '../media/media.entity';
 
 @Entity()
 export class Affiliate extends BaseEntity {
@@ -20,6 +21,16 @@ export class Affiliate extends BaseEntity {
   @Column()
   title: string;
 
+  @OneToOne(() => Media, { cascade: true, eager: true, nullable: true })
+  @JoinColumn()
+  image?: Media;
+
   @Column()
-  code: string;
+  brand: string;
+
+  @Column()
+  basePrice: number;
+
+  @Column()
+  discountPrice: number;
 }
