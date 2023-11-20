@@ -32,19 +32,12 @@ export class AdminService {
       const possibleAdmin = await this.adminRepository.find({
         where: { isAdmin: true },
       });
-      if (possibleAdmin)
+      if (possibleAdmin.length)
         throw new BadRequestException(
           errorMessage.api('admin').ALREADY_CREATED,
         );
-      const admin = await this.adminRepository.findOne({
-        where: [{ email: adminBody.email }],
-      });
-      if (!admin) {
-        const { access_token } = await this.authService.register(adminBody);
-        return access_token;
-      } else {
-        return admin;
-      }
+      const { access_token } = await this.authService.register(adminBody);
+      return access_token;
     } catch (error) {
       throw new BadRequestException(error);
     }
