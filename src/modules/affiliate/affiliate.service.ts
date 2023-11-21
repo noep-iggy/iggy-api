@@ -125,6 +125,10 @@ export class AffiliateService {
         ...body,
         image: image ?? affiliate.image,
       });
+
+      if (body.image && affiliate.image) {
+        await this.mediaService.deleteMedia(affiliate.image.id);
+      }
       return updatedAffiliate;
     } catch (error) {
       console.log(error);
