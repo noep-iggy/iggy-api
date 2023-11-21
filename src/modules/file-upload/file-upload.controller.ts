@@ -16,9 +16,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuid } from 'uuid';
-import { GetCurrentUser } from '../../decorators/get-current-user.decorator';
 import { MediaService } from '../media/media.service';
-import { User } from '../user/user.entity';
 
 export function replaceAll(str: string, find: string, replace: string) {
   return str.replace(new RegExp(find, 'g'), replace);
@@ -64,11 +62,8 @@ export class FileUploadController {
     }),
   )
   @HttpCode(201)
-  async upload(
-    @UploadedFile() file: Express.Multer.File,
-    @GetCurrentUser() user: User,
-  ) {
-    return await this.mediaService.createMedia(file, user);
+  async upload(@UploadedFile() file: Express.Multer.File) {
+    return await this.mediaService.createMedia(file);
   }
 
   @Get('/populate')

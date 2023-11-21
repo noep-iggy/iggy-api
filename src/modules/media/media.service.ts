@@ -1,11 +1,10 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { Media } from './media.entity';
-import { In, Repository } from 'typeorm';
-import { User } from '../user/user.entity';
-import { FileUploadService } from '../file-upload/file-upload.service';
-import * as fs from 'fs';
 import { errorMessage } from '@/errors';
 import { MediaDto, MediaType } from '@/types';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import * as fs from 'fs';
+import { In, Repository } from 'typeorm';
+import { FileUploadService } from '../file-upload/file-upload.service';
+import { Media } from './media.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -89,12 +88,10 @@ export class MediaService {
     }
   }
 
-  async createMedia(file: Express.Multer.File, user: User): Promise<MediaDto> {
+  async createMedia(file: Express.Multer.File): Promise<MediaDto> {
     try {
       if (!file)
         throw new BadRequestException(errorMessage.api('file').UNDEFINED);
-      if (!user)
-        throw new BadRequestException(errorMessage.api('user').UNDEFINED);
       const fileName = file.filename;
       const type = this.fileUploadService.detectFileType(file.filename);
       const media = await this.mediaRepository.save({
@@ -106,6 +103,7 @@ export class MediaService {
       });
       return this.formatMedia(media);
     } catch (e) {
+      console.log(e);
       throw new BadRequestException(errorMessage.api('media').NOT_CREATED);
     }
   }
@@ -130,7 +128,7 @@ export class MediaService {
       const media = await this.mediaRepository.findOneBy({
         id: _id,
       });
-      await this.mediaRepository.remove(media);
+      await this.mediaRepository.delete(media.id);
       fs.unlinkSync(this.getLocalFilePathFromUrl(media.url));
     } catch (e) {
       console.log(e);

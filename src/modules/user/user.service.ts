@@ -18,8 +18,8 @@ import {
   UserRoleEnum,
 } from '@/types';
 import { decryptObject, encryptObject } from '@/utils';
-import { InjectRepository } from '@nestjs/typeorm';
 import { TaskService } from '../task/task.service';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
@@ -182,7 +182,7 @@ export class UserService {
         profilePicture: profilePictureMedia ?? user.profilePicture,
       });
 
-      if (profilePictureMedia) {
+      if (profilePictureMedia && user.profilePicture) {
         await this.mediaService.deleteMedia(user.profilePicture.id);
       }
       return await this.getUser(id);

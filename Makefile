@@ -21,7 +21,7 @@ db.create: ## Create database
 
 
 db.delete: ## Delete database
-	docker-compose down && rm -rf ./db_data && rm -rf ./src/migrations
+	docker-compose down && rm -rf ./db_data && rm -rf ./src/migrations && rm -rf ./public/files/*
 
 db.start: ## Start database
 	docker start iggy-db
