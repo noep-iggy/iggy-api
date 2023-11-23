@@ -1,24 +1,24 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { UserModule } from './modules/user/user.module';
-import { AuthModule } from './modules/auth/auth.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { AdminModule } from './modules/admin/admin.module';
+import { AffiliateModule } from './modules/affiliate/affiliate.module';
+import { AnimalModule } from './modules/animal/animal.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { BillingPlanModule } from './modules/billing-plan/billing-plan.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
-import { MediaModule } from './modules/media/media.module';
 import { HouseModule } from './modules/house/house.module';
 import { JoinCodeModule } from './modules/join-code/join-code.module';
-import { ScheduleModule } from '@nestjs/schedule';
-import { AnimalModule } from './modules/animal/animal.module';
-import { TaskModule } from './modules/task/task.module';
+import { MediaModule } from './modules/media/media.module';
 import { RecurrenceModule } from './modules/recurrence/recurrence.module';
-import { BillingPlanModule } from './modules/billing-plan/billing-plan.module';
-import { AffiliateModule } from './modules/affiliate/affiliate.module';
+import { TaskModule } from './modules/task/task.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
