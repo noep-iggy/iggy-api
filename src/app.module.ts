@@ -34,7 +34,7 @@ import { UserModule } from './modules/user/user.module';
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],
     }),
     MulterModule.register({
-      dest: process.env.FILES_PATH,
+      dest: './public/files',
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
