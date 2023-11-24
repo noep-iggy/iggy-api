@@ -9,15 +9,16 @@ async function bootstrap() {
     'http://noephilippe.freeboxos.fr:8000/',
     'http://noephilippe.freeboxos.fr:3000/',
   ];
-  app.enableCors({
-    origin: function (origin, callback) {
-      if (!origin || whitelist.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-  });
+  process.env.NODE_ENV === 'development' &&
+    app.enableCors({
+      origin: function (origin, callback) {
+        if (!origin || whitelist.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+    });
   await app.listen(process.env.API_PORT || 8000);
 }
 bootstrap();
