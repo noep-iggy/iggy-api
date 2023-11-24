@@ -7,6 +7,7 @@ async function bootstrap() {
     'http://localhost:3000',
     'http://localhost:8000',
     'http://noephilippe.freeboxos.fr:8000/',
+    'http://noephilippe.freeboxos.fr:3000/',
   ];
   app.enableCors({
     origin: function (origin, callback) {
