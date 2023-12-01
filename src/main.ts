@@ -6,8 +6,10 @@ async function bootstrap() {
   const whitelist = [
     'http://localhost:3000',
     'http://localhost:8000',
+    'http://localhost:8081',
     'http://noephilippe.freeboxos.fr:8000',
     'http://noephilippe.freeboxos.fr:3000',
+    'http://10.135.129.143:8081',
   ];
   app.enableCors({
     origin: function (origin, callback) {
