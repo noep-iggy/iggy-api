@@ -23,7 +23,7 @@ export class JoinCodeService {
       code: joinCode.code,
       expirationDate: joinCode.expirationDate,
       type: joinCode.type,
-      house: joinCode.house.id,
+      house: joinCode.house.name,
     };
   }
 
