@@ -48,6 +48,7 @@ export class HouseController {
     @GetCurrentUser() user: User,
   ) {
     try {
+      console.log('[D] house.controller', user);
       await houseValidation.create.validate(body, {
         abortEarly: false,
       });
@@ -64,6 +65,7 @@ export class HouseController {
           errorMessage.api('billingPlan').NOT_FOUND,
         );
       }
+
       const house = await this.service.createHouse(body, user);
       return this.service.formatHouse(house);
     } catch (e) {

@@ -23,6 +23,7 @@ export class JoinCodeService {
       code: joinCode.code,
       expirationDate: joinCode.expirationDate,
       type: joinCode.type,
+      house: joinCode.house.id,
     };
   }
 
@@ -46,6 +47,19 @@ export class JoinCodeService {
       await this.joincodeRepository.delete(id);
     } catch (e) {
       throw new Error(errorMessage.api('joincode').NOT_DELETED);
+    }
+  }
+
+  async findJoincodeByCode(code: string): Promise<JoinCode> {
+    try {
+      return await this.joincodeRepository.findOne({
+        where: {
+          code: code,
+        },
+        relations: ['house'],
+      });
+    } catch (e) {
+      throw new Error(errorMessage.api('joincode').NOT_FOUND);
     }
   }
 

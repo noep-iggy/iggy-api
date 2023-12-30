@@ -26,9 +26,6 @@ export class JoinCodeModule {
   public configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .forRoutes(
-        { path: '/join-code', method: RequestMethod.ALL },
-        { path: '/join-code/*', method: RequestMethod.ALL },
-      );
+      .forRoutes({ path: '/join-code/create/*', method: RequestMethod.ALL });
   }
 }

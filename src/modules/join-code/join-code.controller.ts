@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   UseGuards,
 } from '@nestjs/common';
 import { JoinCodeService } from './join-code.service';
@@ -42,6 +43,14 @@ export class JoincodeController {
       user.house,
       JoinCodeTypeEnum.CHILD,
     );
+    return this.service.formatJoinCode(joincode);
+  }
+
+  @Get(':code')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  async getJoincode(@Param('code') code: string) {
+    const joincode = await this.service.findJoincodeByCode(code);
     return this.service.formatJoinCode(joincode);
   }
 }

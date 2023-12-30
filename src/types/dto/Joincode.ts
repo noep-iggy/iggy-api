@@ -7,4 +7,5 @@ export interface JoinCodeDto {
   code: string;
   expirationDate: Date;
   type: JoinCodeTypeEnum;
+  house: string;
 }
