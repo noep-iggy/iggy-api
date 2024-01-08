@@ -20,13 +20,20 @@ import { UserService } from '../user/user.service';
 import { SearchParams, UpdateUserApi } from '@/types';
 import { userValidation } from '@/validations';
 import { GetSearchParams } from '@/decorators/get-search-params.decorator';
+import { AdminService } from './admin.service';
 
 @Controller('admin')
 export class AdminUsersController {
   constructor(
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
+    private readonly adminService: AdminService,
   ) {}
+
+  @Get('/create-default-admin')
+  loadAdmin() {
+    return this.adminService.loadAdmin();
+  }
 
   @Get('users/:id/toggle-admin-status')
   @HttpCode(200)

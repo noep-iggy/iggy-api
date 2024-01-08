@@ -1,13 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { AdminService } from './modules/admin/admin.service';
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly adminService: AdminService,
-  ) {}
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   getHello(): string {
@@ -17,10 +13,5 @@ export class AppController {
   @Get('/populate')
   populateDatabase() {
     this.appService.populateDatabase();
-  }
-
-  @Get('/create-default-admin')
-  loadAdmin() {
-    return this.adminService.loadAdmin();
   }
 }

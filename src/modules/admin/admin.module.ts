@@ -49,9 +49,6 @@ export class AdminModule {
   public configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .forRoutes(
-        { path: '/admin', method: RequestMethod.ALL },
-        { path: '/admin/*', method: RequestMethod.ALL },
-      );
+      .forRoutes({ path: '/admin/users/*', method: RequestMethod.ALL });
   }
 }
