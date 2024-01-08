@@ -55,7 +55,7 @@ export class AuthController {
         abortEarly: false,
       });
       const user = await this.userService.findOneByEmail(body.email);
-      if (!user.isAdmin)
+      if (user.isAdmin === false)
         throw new BadRequestException(errorMessage.api('user').NOT_ADMIN);
       return await this.authService.login(body);
     } catch (e) {
