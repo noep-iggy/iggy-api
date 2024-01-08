@@ -50,12 +50,8 @@ export class AdminModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/admin/users/*', method: RequestMethod.ALL },
-        { path: '/admin/affiliates/*', method: RequestMethod.ALL },
-        { path: '/admin/animals/*', method: RequestMethod.ALL },
-        { path: '/admin/billing-plans/*', method: RequestMethod.ALL },
-        { path: '/admin/houses/*', method: RequestMethod.ALL },
-        { path: '/admin/tasks/*', method: RequestMethod.ALL },
+        { path: '/admin', method: RequestMethod.ALL },
+        { path: '/admin/*', method: RequestMethod.ALL },
       );
   }
 }
