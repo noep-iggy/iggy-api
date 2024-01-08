@@ -11,7 +11,6 @@ import {
   UseGuards,
   forwardRef,
 } from '@nestjs/common';
-import { AdminService } from './admin.service';
 import { ApiKeyGuard } from 'src/decorators/api-key.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetCurrentUser } from 'src/decorators/get-current-user.decorator';
@@ -25,18 +24,9 @@ import { GetSearchParams } from '@/decorators/get-search-params.decorator';
 @Controller('admin')
 export class AdminUsersController {
   constructor(
-    private service: AdminService,
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
   ) {}
-
-  @Get('create-default-admin')
-  @HttpCode(200)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  loadAdmin() {
-    return this.service.loadAdmin();
-  }
 
   @Get('users/:id/toggle-admin-status')
   @HttpCode(200)
