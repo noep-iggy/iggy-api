@@ -19,12 +19,15 @@ import { CreateAnimalApi } from '@/types';
 import { animalValidation } from '@/validations';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { User } from '../user/user.entity';
+import { TaskService } from '../task/task.service';
 
 @Controller('animals')
 export class AnimalController {
   constructor(
     @Inject(forwardRef(() => AnimalService))
     private readonly service: AnimalService,
+    @Inject(forwardRef(() => TaskService))
+    private readonly taskService: TaskService,
   ) {}
 
   @Post()
@@ -66,7 +69,8 @@ export class AnimalController {
   async getAnimal(@Param('id') id: string) {
     try {
       const animal = await this.service.findOneById(id);
-      return this.service.formatAnimal(animal);
+      const tasks = await this.taskService.findTasksByAnimalId(id);
+      return this.service.formatAnimal({ ...animal, tasks });
     } catch (e) {
       throw new BadRequestException(e);
     }

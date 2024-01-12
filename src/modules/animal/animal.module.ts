@@ -12,6 +12,7 @@ import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
 import { HouseModule } from '../house/house.module';
 import { UserModule } from '../user/user.module';
+import { TaskModule } from '../task/task.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserModule } from '../user/user.module';
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
     forwardRef(() => HouseModule),
+    forwardRef(() => TaskModule),
   ],
   providers: [AnimalService],
   controllers: [AnimalController],

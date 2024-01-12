@@ -170,6 +170,19 @@ export class TaskService {
     }
   }
 
+  async findTasksByAnimalId(animalId: string): Promise<Task[]> {
+    try {
+      const tasks = await this.taskRepository.find({
+        where: { animals: { id: animalId } },
+        relations: ['users', 'animals', 'recurrence'],
+      });
+      return tasks;
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
+    }
+  }
+
   async findTaskByStatus(
     houseId: string,
     status: TaskStatusEnum,
