@@ -37,7 +37,7 @@ jobs:
         run: npm install
 
       - name: Check migrations status
-        run: npx typeorm-ts-node-esm migration:show -d ./ormconfig.ts
+        run: npm run migrate:show
         id: check_migrations
 
       - name: Generate migration if needed
