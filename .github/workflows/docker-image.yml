@@ -2,9 +2,11 @@ name: Docker Image CI/CD
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - main
   pull_request:
-    branches: ['main']
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -20,11 +22,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Docker login
-        run: |
-          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+        run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
 
       - name: Build and push Docker image
         run: |
@@ -33,7 +34,7 @@ jobs:
           docker push $DOCKER_USER/$DOCKER_REPO:latest
 
       - name: Install dependencies
-        run: npm install # Adjust based on your stack
+        run: npm install
 
       - name: Check migrations status
         run: npx typeorm-ts-node-esm migration:show -d ./ormconfig.ts
@@ -50,21 +51,10 @@ jobs:
 
       - name: Deploy to production
         run: |
-          # SSH into the server and run deployment commands
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$SSH_USER@$SSH_HOST" << EOF
             cd "$REMOTE_DIR"
-
-            # Pull the latest Docker image
-            docker pull $DOCKER_USER/$DOCKER_REPO:latest
-
-            # Stop existing containers (if any)
             docker-compose down
-
-            # Run the Docker containers
+            docker pull $DOCKER_USER/$DOCKER_REPO:latest
             docker-compose up -d
-
-            # Additional deployment steps
-            # ...
-
             echo "Deployment completed successfully."
           EOF
