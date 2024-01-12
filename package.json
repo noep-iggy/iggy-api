@@ -16,9 +16,9 @@
     "test": "jest",
     "typeorm": "typeorm-ts-node-commonjs",
     "migrate": "npm run migrate:generate && npm run migrate:run",
-    "migrate:show": "ts-node -r tsconfig-paths/register -r ts-node/register node_modules/typeorm/cli.js migration:show -d ./ormconfig.ts",
-    "migrate:generate": "ts-node -r tsconfig-paths/register -r ts-node/register node_modules/typeorm/cli.js migration:generate -d ./ormconfig.ts -n",
-    "migrate:run": "ts-node -r tsconfig-paths/register -r ts-node/register node_modules/typeorm/cli.js migration:run -d ./ormconfig.ts",
+    "migrate:generate": "npx typeorm-ts-node-esm migration:generate ./src/migrations/migrations -d ./ormconfig.ts",
+    "migrate:run": "npx typeorm-ts-node-esm migration:run -d ./ormconfig.ts",
+    "migrate:show": "npx typeorm-ts-node-esm migration:show -d ./ormconfig.ts",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
