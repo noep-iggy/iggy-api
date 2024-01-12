@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_ed25519 -p 1111 "$SSH_USER@$SSH_HOST" << EOF
+          ssh -T -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_ed25519 -p 1111 "$SSH_USER@$SSH_HOST" << EOF
             cd "$REMOTE_DIR"
             docker-compose down
             docker pull $DOCKER_USER/$DOCKER_REPO:latest
