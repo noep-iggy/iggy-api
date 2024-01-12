@@ -36,18 +36,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Check migrations status
-        run: npm run migrate:show
-        id: check_migrations
+      # - name: Check migrations status
+      #   run: npm run migrate:show
+      #   id: check_migrations
 
-      - name: Generate migration if needed
-        run: |
-          if [ "$(echo "${{ steps.check_migrations.outputs.stdout }}" | wc -l)" -eq 0 ]; then
-            npx typeorm-ts-node-esm migration:generate -d ./ormconfig.ts -n InitialMigration
-          fi
+      # - name: Generate migration if needed
+      #   run: |
+      #     if [ "$(echo "${{ steps.check_migrations.outputs.stdout }}" | wc -l)" -eq 0 ]; then
+      #       npm run migrate:generate
+      #     fi
 
-      - name: Run migrations
-        run: npx typeorm-ts-node-esm migration:run -d ./ormconfig.ts
+      # - name: Run migrations
+      #   run: npm run migrate:run
 
       - name: Deploy to production
         run: |
