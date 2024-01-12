@@ -15,8 +15,11 @@ services:
       - POSTGRES_USER=${TYPEORM_USERNAME}
       - POSTGRES_DB=${TYPEORM_DATABASE}
     volumes:
-      - ./db_data:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
     ports:
       - '5432:5432'
     networks:
       - app-network
+
+volumes:
+  db:

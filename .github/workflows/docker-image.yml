@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Image CI/CD
 
 on:
   push:
@@ -7,23 +7,64 @@ on:
     branches: ['main']
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
+    env:
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      REMOTE_DIR: '~/igy-prod/'
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+
     steps:
-      - uses: actions/checkout@v3
-      - name: docker login
-        env:
-          DOCKER_USER: ${{secrets.DOCKER_USER}}
-          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-          DOCKER_REPO: ${{secrets.DOCKER_REPO}}
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Docker login
         run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-      - name: Build the Docker image
-        run: docker buildx build . --file Dockerfile --tag ${{secrets.DOCKER_REPO}}:latest
 
-      - name: Tag the Docker image
-        run: docker tag ${{secrets.DOCKER_REPO}}:latest ${{secrets.DOCKER_USER}}/${{secrets.DOCKER_REPO}}:latest
+      - name: Build and push Docker image
+        run: |
+          docker buildx build . --file Dockerfile --tag $DOCKER_REPO:latest
+          docker tag $DOCKER_REPO:latest $DOCKER_USER/$DOCKER_REPO:latest
+          docker push $DOCKER_USER/$DOCKER_REPO:latest
 
-      - name: Docker push
-        run: docker push ${{secrets.DOCKER_USER}}/${{secrets.DOCKER_REPO}}:latest
+      - name: Install dependencies
+        run: npm install # Adjust based on your stack
+
+      - name: Check migrations status
+        run: npx typeorm-ts-node-esm migration:show -d ./ormconfig.ts
+        id: check_migrations
+
+      - name: Generate migration if needed
+        run: |
+          if [ "$(echo "${{ steps.check_migrations.outputs.stdout }}" | wc -l)" -eq 0 ]; then
+            npx typeorm-ts-node-esm migration:generate -d ./ormconfig.ts -n InitialMigration
+          fi
+
+      - name: Run migrations
+        run: npx typeorm-ts-node-esm migration:run -d ./ormconfig.ts
+
+      - name: Deploy to production
+        run: |
+          # SSH into the server and run deployment commands
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$SSH_USER@$SSH_HOST" << EOF
+            cd "$REMOTE_DIR"
+
+            # Pull the latest Docker image
+            docker pull $DOCKER_USER/$DOCKER_REPO:latest
+
+            # Stop existing containers (if any)
+            docker-compose down
+
+            # Run the Docker containers
+            docker-compose up -d
+
+            # Additional deployment steps
+            # ...
+
+            echo "Deployment completed successfully."
+          EOF
