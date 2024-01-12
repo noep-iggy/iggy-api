@@ -48,6 +48,12 @@ jobs:
 
       # - name: Run migrations
       #   run: npm run migrate:run
+      - name: Add SSH key to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p 1111 -t ed25519 "$SSH_HOST" >> ~/.ssh/known_hosts
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
 
       - name: Deploy to production
         run: |
