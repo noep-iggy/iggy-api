@@ -56,7 +56,12 @@ export class AnimalController {
   async getAnimals(@GetCurrentUser() user: User) {
     try {
       const animals = await this.service.findAnimalsByHouseId(user.house.id);
-      return animals.map((animal) => this.service.formatAnimal(animal));
+      return Promise.all(
+        animals.map(async (animal) => {
+          const tasks = await this.taskService.findTasksByAnimalId(animal.id);
+          return this.service.formatAnimal({ ...animal, tasks });
+        }),
+      );
     } catch (e) {
       throw new BadRequestException(e);
     }
