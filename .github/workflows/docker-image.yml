@@ -19,6 +19,7 @@ jobs:
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     steps:
       - name: Checkout code
@@ -33,21 +34,6 @@ jobs:
           docker tag $DOCKER_REPO:latest $DOCKER_USER/$DOCKER_REPO:latest
           docker push $DOCKER_USER/$DOCKER_REPO:latest
 
-      - name: Install dependencies
-        run: npm install
-
-      # - name: Check migrations status
-      #   run: npm run migrate:show
-      #   id: check_migrations
-
-      # - name: Generate migration if needed
-      #   run: |
-      #     if [ "$(echo "${{ steps.check_migrations.outputs.stdout }}" | wc -l)" -eq 0 ]; then
-      #       npm run migrate:generate
-      #     fi
-
-      # - name: Run migrations
-      #   run: npm run migrate:run
       - name: Add SSH key to known hosts
         run: |
           mkdir -p ~/.ssh
@@ -57,6 +43,8 @@ jobs:
 
       - name: Deploy to production
         run: |
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_ed25519 -p 1111 "$SSH_USER@$SSH_HOST" << EOF
             cd "$REMOTE_DIR"
             docker-compose down
