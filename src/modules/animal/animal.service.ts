@@ -50,7 +50,7 @@ export class AnimalService {
               `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
           ),
         },
-        relations: ['house', 'tasks'],
+        relations: ['house'],
         order: {
           ...order,
           house: {
