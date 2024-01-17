@@ -9,4 +9,6 @@ RUN npm run build
 FROM node:19-alpine
 WORKDIR /app
 COPY --from=builder /app ./
+COPY ./scripts/check-migration.sh ./scripts/ 
+RUN chmod +x ./scripts/check-migration.sh 
 CMD ./scripts/check-migration.sh && npm run start:prod
