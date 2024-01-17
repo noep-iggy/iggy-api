@@ -20,12 +20,15 @@ import { SearchParams, UpdateHouseApi } from '@/types';
 import { animalValidation } from '@/validations';
 import { AnimalService } from '../animal/animal.service';
 import { GetSearchParams } from '@/decorators/get-search-params.decorator';
+import { TaskService } from '../task/task.service';
 
 @Controller('admin')
 export class AdminAnimalsController {
   constructor(
     @Inject(forwardRef(() => AnimalService))
     private animalService: AnimalService,
+    @Inject(forwardRef(() => TaskService))
+    private readonly taskService: TaskService,
   ) {}
 
   @Get('animals')
@@ -40,8 +43,11 @@ export class AdminAnimalsController {
       if (!user.isAdmin)
         throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
       return Promise.all(
-        (await this.animalService.getAnimals(searchParams)).map((animal) =>
-          this.animalService.formatAnimal(animal),
+        (await this.animalService.getAnimals(searchParams)).map(
+          async (animal) => {
+            const tasks = await this.taskService.findTasksByAnimalId(animal.id);
+            return this.animalService.formatAnimal({ ...animal, tasks });
+          },
         ),
       );
     } catch (e) {
