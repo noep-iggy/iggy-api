@@ -24,6 +24,3 @@ else
     # Exécutez les migrations
     npm run migrate:run || exit 1
 fi
-
-# Démarrer l'application
-node dist/src/main
