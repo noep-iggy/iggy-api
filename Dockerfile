@@ -1,12 +1,13 @@
-FROM node:19 AS builder
+# Builder image
+FROM node:19-alpine AS builder
 WORKDIR /app
 COPY ./package.json ./
 COPY .env.production .env
-RUN npm install
-COPY . .
-RUN npm run build
+RUN npm install --production \
+    && npm run build \
+    && npm prune --production
 
-
+# Image finale
 FROM node:19-alpine
 WORKDIR /app
 COPY --from=builder /app ./

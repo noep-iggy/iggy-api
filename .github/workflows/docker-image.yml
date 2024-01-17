@@ -36,4 +36,4 @@ jobs:
 
       - name: Deploy to production
         run: |
-          ssh $SSH_USER@$SSH_HOST -i $SSH_PRIVATE_KEY -p 1111 "cd ~/iggy-prod && docker compose down && docker pull $DOCKER_USER/$DOCKER_REPO && docker compose up -d && echo 'Deployment completed successfully.'"
+          ssh -i "$SSH_PRIVATE_KEY" -p 1111 "$SSH_USER@$SSH_HOST" "cd ~/iggy-prod && docker compose down && docker pull $DOCKER_USER/$DOCKER_REPO && docker-compose up -d && echo 'Deployment completed successfully.'"
