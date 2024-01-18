@@ -158,7 +158,7 @@ export class TaskService {
     try {
       const tasks = await this.taskRepository.find({
         ...this.searchConditions(searchParams),
-        where: { users: { house: { id: houseId } } },
+        where: { users: { house: { id: houseId } }, isArchived: false },
       });
       return tasks;
     } catch (error) {
@@ -195,8 +195,11 @@ export class TaskService {
 
   async findArchiveTaskByHouseId(houseId: string): Promise<Task[]> {
     try {
-      const tasks = await this.findTaskByHouseId(houseId);
-      return tasks.filter((task) => task.isArchived);
+      const tasks = await this.taskRepository.find({
+        where: { users: { house: { id: houseId } }, isArchived: true },
+        relations: ['users', 'animals', 'recurrence'],
+      });
+      return tasks;
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
