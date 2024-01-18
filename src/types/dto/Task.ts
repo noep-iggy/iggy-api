@@ -8,7 +8,6 @@ export enum TaskStatusEnum {
   TODO = 'TODO',
   TO_VALIDATE = 'TO_VALIDATE',
   DONE = 'DONE',
-  ARCHIVED = 'ARCHIVED',
 }
 
 export interface TaskDto extends BaseDto {
@@ -21,4 +20,5 @@ export interface TaskDto extends BaseDto {
   users: UserDto[];
   animals: AnimalDto[];
   picture?: MediaDto;
+  isArchived: boolean;
 }

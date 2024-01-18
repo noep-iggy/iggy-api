@@ -61,6 +61,17 @@ export class TaskController {
     return tasks.map((task) => this.service.formatTask(task));
   }
 
+  @Get('archive')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getArchiveTasksByHouse(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    const tasks = await this.service.findArchiveTaskByHouseId(user.house.id);
+    return tasks.map((task) => this.service.formatTask(task));
+  }
+
   @Post()
   @HttpCode(201)
   @UseGuards(ApiKeyGuard)

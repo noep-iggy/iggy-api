@@ -156,14 +156,11 @@ export class TaskService {
     searchParams?: SearchParams,
   ): Promise<Task[]> {
     try {
-      const users = await this.userService.findUsersByHouseId(houseId);
-      const tasks = await Promise.all(
-        users.map((user) => this.findTaskByUserId(user.id, searchParams)),
-      );
-
-      return tasks.flat().filter((task, index, self) => {
-        return index === self.findIndex((t) => t.id === task.id);
+      const tasks = await this.taskRepository.find({
+        ...this.searchConditions(searchParams),
+        where: { users: { house: { id: houseId } } },
       });
+      return tasks;
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
@@ -188,18 +185,18 @@ export class TaskService {
     status: TaskStatusEnum,
   ): Promise<Task[]> {
     try {
-      const users = await this.userService.findUsersByHouseId(houseId);
-      const tasks = await Promise.all(
-        users.map((user) =>
-          this.taskRepository.find({
-            where: { users: { id: user.id }, status },
-            relations: ['users', 'animals', 'recurrence'],
-          }),
-        ),
-      );
-      return tasks.flat().filter((task, index, self) => {
-        return index === self.findIndex((t) => t.id === task.id);
-      });
+      const tasks = await this.findTaskByHouseId(houseId);
+      return tasks.filter((task) => task.status === status);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
+    }
+  }
+
+  async findArchiveTaskByHouseId(houseId: string): Promise<Task[]> {
+    try {
+      const tasks = await this.findTaskByHouseId(houseId);
+      return tasks.filter((task) => task.isArchived);
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
@@ -391,11 +388,12 @@ export class TaskService {
               task.animals,
             );
           }
-          await this.updateTask(
+          await this.taskRepository.update(
+            { id: task.id },
             {
-              status: TaskStatusEnum.ARCHIVED,
+              isArchived: true,
+              updatedAt: new Date(),
             },
-            task.id,
           );
         }
       }),

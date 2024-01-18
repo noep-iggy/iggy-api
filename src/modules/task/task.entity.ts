@@ -47,4 +47,7 @@ export class Task extends BaseEntity {
   })
   @JoinColumn()
   recurrence?: Recurrence;
+
+  @Column({ default: false })
+  isArchived: boolean;
 }
