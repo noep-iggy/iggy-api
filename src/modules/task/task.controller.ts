@@ -18,6 +18,7 @@ import {
   CheckTaskApi,
   CreateTaskApi,
   RefuseTaskAPi,
+  SearchParams,
   TaskStatusEnum,
   UpdateTaskApi,
 } from '@/types';
@@ -26,6 +27,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { errorMessage } from '@/errors';
 import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
 import { User } from '../user/user.entity';
+import { GetSearchParams } from '@/decorators/get-search-params.decorator';
 
 @Controller('tasks')
 export class TaskController {
@@ -38,10 +40,16 @@ export class TaskController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async getTasks(@GetCurrentUser() user: User) {
+  async getTasks(
+    @GetCurrentUser() user: User,
+    @GetSearchParams() searchParams: SearchParams,
+  ) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
-    const tasks = await this.service.findTaskByHouseId(user.house.id);
+    const tasks = await this.service.findTaskByHouseId(
+      user.house.id,
+      searchParams,
+    );
     return tasks.map((task) => this.service.formatTask(task));
   }
 
@@ -52,12 +60,17 @@ export class TaskController {
   async getArchiveTasks(
     @GetCurrentUser() user: User,
     @Param('status') status: TaskStatusEnum,
+    @GetSearchParams() searchParams: SearchParams,
   ) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
     if (TaskStatusEnum[status] === undefined)
       throw new BadRequestException(errorMessage.api('task').NOT_FOUND);
-    const tasks = await this.service.findTaskByStatus(user.house.id, status);
+    const tasks = await this.service.findTaskByStatus(
+      user.house.id,
+      status,
+      searchParams,
+    );
     return tasks.map((task) => this.service.formatTask(task));
   }
 
@@ -65,10 +78,16 @@ export class TaskController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async getArchiveTasksByHouse(@GetCurrentUser() user: User) {
+  async getArchiveTasksByHouse(
+    @GetCurrentUser() user: User,
+    @GetSearchParams() searchParams: SearchParams,
+  ) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
-    const tasks = await this.service.findArchiveTaskByHouseId(user.house.id);
+    const tasks = await this.service.findArchiveTaskByHouseId(
+      user.house.id,
+      searchParams,
+    );
     return tasks.map((task) => this.service.formatTask(task));
   }
 

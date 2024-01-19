@@ -183,9 +183,10 @@ export class TaskService {
   async findTaskByStatus(
     houseId: string,
     status: TaskStatusEnum,
+    searchParams?: SearchParams,
   ): Promise<Task[]> {
     try {
-      const tasks = await this.findTaskByHouseId(houseId);
+      const tasks = await this.findTaskByHouseId(houseId, searchParams);
       return tasks.filter((task) => task.status === status);
     } catch (error) {
       console.log(error);
@@ -193,11 +194,14 @@ export class TaskService {
     }
   }
 
-  async findArchiveTaskByHouseId(houseId: string): Promise<Task[]> {
+  async findArchiveTaskByHouseId(
+    houseId: string,
+    searchParams?: SearchParams,
+  ): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
+        ...this.searchConditions(searchParams),
         where: { users: { house: { id: houseId } }, isArchived: true },
-        relations: ['users', 'animals', 'recurrence'],
       });
       return tasks;
     } catch (error) {

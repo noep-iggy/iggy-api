@@ -94,7 +94,7 @@ export class RecurrenceService {
 
   // CRON RECURRENCE
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async checkDailyRecurrence() {
     try {
       const recurrences = await this.reccurenceRepository.find({
@@ -110,11 +110,17 @@ export class RecurrenceService {
             title: task.title,
             description: task.description,
           });
+          const newRecurrenceDate = new Date();
+          const taskDate = new Date(recurrence.task.date);
+          newRecurrenceDate.setHours(
+            taskDate.getHours(),
+            taskDate.getMinutes(),
+            taskDate.getSeconds(),
+            taskDate.getMilliseconds(),
+          );
           await this.taskService.createTask({
             ...decryptedTask,
-            date: new Date(
-              new Date(Date.now()).setDate(task.date.getDate() + 1),
-            ),
+            date: newRecurrenceDate,
             userIds: task.users.map((user) => user.id),
             animalIds: task.animals.map((animal) => animal.id),
             recurrence: TaskRecurrenceEnum.DAILY,
