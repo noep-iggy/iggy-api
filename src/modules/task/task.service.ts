@@ -121,11 +121,11 @@ export class TaskService {
     }
   }
 
-  async getTaskById(id: string, searchParams?: SearchParams): Promise<Task> {
+  async getTaskById(id: string): Promise<Task> {
     try {
       const task = await this.taskRepository.findOne({
-        ...this.searchConditions(searchParams),
         where: { id },
+        relations: ['users', 'animals', 'recurrence'],
       });
       return task;
     } catch (error) {
@@ -167,11 +167,14 @@ export class TaskService {
     }
   }
 
-  async findTasksByAnimalId(animalId: string): Promise<Task[]> {
+  async findTasksByAnimalId(
+    animalId: string,
+    searchParams?: SearchParams,
+  ): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
+        ...this.searchConditions(searchParams),
         where: { animals: { id: animalId }, isArchived: false },
-        relations: ['users', 'animals', 'recurrence'],
       });
       return tasks;
     } catch (error) {

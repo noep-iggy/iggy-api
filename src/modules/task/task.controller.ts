@@ -111,11 +111,8 @@ export class TaskController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async getTask(
-    @Param('id') id: string,
-    @GetSearchParams() searchParams: SearchParams,
-  ) {
-    const task = await this.service.getTaskById(id, searchParams);
+  async getTask(@Param('id') id: string) {
+    const task = await this.service.getTaskById(id);
     return this.service.formatTask(task);
   }
 

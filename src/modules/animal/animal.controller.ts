@@ -15,11 +15,12 @@ import {
 import { AnimalService } from './animal.service';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
-import { CreateAnimalApi } from '@/types';
+import { CreateAnimalApi, SearchParams } from '@/types';
 import { animalValidation } from '@/validations';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { User } from '../user/user.entity';
 import { TaskService } from '../task/task.service';
+import { GetSearchParams } from '@/decorators/get-search-params.decorator';
 
 @Controller('animals')
 export class AnimalController {
@@ -71,10 +72,16 @@ export class AnimalController {
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async getAnimal(@Param('id') id: string) {
+  async getAnimal(
+    @Param('id') id: string,
+    @GetSearchParams() searchParams: SearchParams,
+  ) {
     try {
       const animal = await this.service.findOneById(id);
-      const tasks = await this.taskService.findTasksByAnimalId(id);
+      const tasks = await this.taskService.findTasksByAnimalId(
+        id,
+        searchParams,
+      );
       return this.service.formatAnimal({ ...animal, tasks });
     } catch (e) {
       throw new BadRequestException(e);
