@@ -116,6 +116,18 @@ export class TaskController {
     return this.service.formatTask(task);
   }
 
+  @Get('animal/:id')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getTasksByAnimalId(
+    @Param('id') id: string,
+    @GetSearchParams() searchParams: SearchParams,
+  ) {
+    const tasks = await this.service.findTasksByAnimalId(id, searchParams);
+    return tasks.map((task) => this.service.formatTask(task));
+  }
+
   @Patch(':id')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
