@@ -170,7 +170,11 @@ export class TaskService {
   async findTasksByAnimalId(animalId: string): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
-        where: { animals: { id: animalId } },
+        where: {
+          animals: { id: animalId },
+          isArchived: false,
+          date: Raw((alias) => `${alias} > NOW()`),
+        },
         relations: ['users', 'animals', 'recurrence'],
       });
       return tasks;
