@@ -314,8 +314,6 @@ export class TaskService {
         relations: ['users', 'animals'],
       });
       const findPicture = await this.mediaService.getMediaById(pictureId);
-      if (findPicture && task.picture)
-        await this.mediaService.deleteMedia(task.picture.id);
       const taskUpdated = await this.taskRepository.save({
         ...task,
         status: TaskStatusEnum.TO_VALIDATE,
@@ -357,15 +355,18 @@ export class TaskService {
 
   async refuseTask(id: string, message: string): Promise<Task> {
     try {
+      const task = await this.getTaskById(id);
       const cryotMessage = encryptObject({ message });
       await this.taskRepository.update(
         { id },
         {
           status: TaskStatusEnum.TODO,
           message: cryotMessage.message,
+          picture: null,
           updatedAt: new Date(),
         },
       );
+      task.picture && (await this.mediaService.deleteMedia(task.picture.id));
       return await this.getTaskById(id);
     } catch (error) {
       console.log(error);
