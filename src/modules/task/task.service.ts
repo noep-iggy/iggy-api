@@ -339,15 +339,11 @@ export class TaskService {
 
   async validateTask(id: string): Promise<Task> {
     try {
-      const task = await this.taskRepository.findOne({
-        where: { id },
-        relations: ['users', 'animals'],
-      });
+      const task = await this.getTaskById(id);
       const taskUpdated = await this.taskRepository.save({
         ...task,
         status: TaskStatusEnum.DONE,
         updatedAt: new Date(),
-        picture: undefined,
       });
       await this.animalService.updateAnimalsStatus('upgrade', task.animals);
       if (task.picture) await this.mediaService.deleteMedia(task.picture.id);
