@@ -346,7 +346,6 @@ export class TaskService {
         updatedAt: new Date(),
       });
       await this.animalService.updateAnimalsStatus('upgrade', task.animals);
-      if (task.picture) await this.mediaService.deleteMedia(task.picture.id);
       return taskUpdated;
     } catch (error) {
       console.log(error);
