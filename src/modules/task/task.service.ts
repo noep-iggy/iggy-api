@@ -1,8 +1,8 @@
 import { errorMessage } from '@/errors';
 import {
   CreateTaskApi,
-  SearchParams,
   TaskDto,
+  TaskSearchParams,
   TaskStatusEnum,
   UpdateTaskApi,
 } from '@/types';
@@ -49,6 +49,38 @@ export class TaskService {
     };
   }
 
+  searchConditions(searchParams?: TaskSearchParams): FindManyOptions<Task> {
+    if (!searchParams) return { relations: ['users', 'animals', 'recurrence'] };
+    const order = {
+      [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
+    };
+    return {
+      where: {
+        title: Raw(
+          (alias) =>
+            `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
+        ),
+        date: searchParams.date ? Raw((alias) => `date(${alias})`) : undefined,
+        status: searchParams.status,
+      },
+      relations: ['users', 'animals', 'recurrence'],
+      order: {
+        ...order,
+        users: {
+          firstName: searchParams.orderType ?? 'DESC',
+        },
+        animals: {
+          name: searchParams.orderType ?? 'DESC',
+        },
+        recurrence: {
+          type: searchParams.orderType ?? 'DESC',
+        },
+      },
+      skip: searchParams.page * searchParams.pageSize,
+      take: searchParams.pageSize,
+    };
+  }
+
   async createTask(body: CreateTaskApi): Promise<Task> {
     try {
       const { recurrence, date, userIds, title, animalIds, ...task } = body;
@@ -81,37 +113,7 @@ export class TaskService {
     }
   }
 
-  searchConditions(searchParams?: SearchParams): FindManyOptions<Task> {
-    if (!searchParams) return { relations: ['users', 'animals', 'recurrence'] };
-    const order = {
-      [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
-    };
-    return {
-      where: {
-        title: Raw(
-          (alias) =>
-            `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
-        ),
-      },
-      relations: ['users', 'animals', 'recurrence'],
-      order: {
-        ...order,
-        users: {
-          firstName: searchParams.orderType ?? 'DESC',
-        },
-        animals: {
-          name: searchParams.orderType ?? 'DESC',
-        },
-        recurrence: {
-          type: searchParams.orderType ?? 'DESC',
-        },
-      },
-      skip: searchParams.page * searchParams.pageSize,
-      take: searchParams.pageSize,
-    };
-  }
-
-  async getTasks(searchParams: SearchParams): Promise<Task[]> {
+  async getTasks(searchParams: TaskSearchParams): Promise<Task[]> {
     try {
       return await this.taskRepository.find(
         this.searchConditions(searchParams),
@@ -136,7 +138,7 @@ export class TaskService {
 
   async findTaskByUserId(
     userId: string,
-    searchParams?: SearchParams,
+    searchParams?: TaskSearchParams,
   ): Promise<Task[]> {
     try {
       const conditions = this.searchConditions(searchParams);
@@ -153,7 +155,7 @@ export class TaskService {
 
   async findTaskByHouseId(
     houseId: string,
-    searchParams?: SearchParams,
+    searchParams?: TaskSearchParams,
   ): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
@@ -169,7 +171,7 @@ export class TaskService {
 
   async findTasksByAnimalId(
     animalId: string,
-    searchParams?: SearchParams,
+    searchParams?: TaskSearchParams,
   ): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
@@ -186,7 +188,7 @@ export class TaskService {
   async findTaskByStatus(
     houseId: string,
     status: TaskStatusEnum,
-    searchParams?: SearchParams,
+    searchParams?: TaskSearchParams,
   ): Promise<Task[]> {
     try {
       const tasks = await this.findTaskByHouseId(houseId, searchParams);
@@ -199,7 +201,7 @@ export class TaskService {
 
   async findArchiveTaskByHouseId(
     houseId: string,
-    searchParams?: SearchParams,
+    searchParams?: TaskSearchParams,
   ): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({

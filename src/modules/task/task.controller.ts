@@ -18,7 +18,7 @@ import {
   CheckTaskApi,
   CreateTaskApi,
   RefuseTaskAPi,
-  SearchParams,
+  TaskSearchParams,
   TaskStatusEnum,
   UpdateTaskApi,
 } from '@/types';
@@ -42,7 +42,7 @@ export class TaskController {
   @ApiBearerAuth()
   async getTasks(
     @GetCurrentUser() user: User,
-    @GetSearchParams() searchParams: SearchParams,
+    @GetSearchParams() searchParams: TaskSearchParams,
   ) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
@@ -60,7 +60,7 @@ export class TaskController {
   async getArchiveTasks(
     @GetCurrentUser() user: User,
     @Param('status') status: TaskStatusEnum,
-    @GetSearchParams() searchParams: SearchParams,
+    @GetSearchParams() searchParams: TaskSearchParams,
   ) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
@@ -80,7 +80,7 @@ export class TaskController {
   @ApiBearerAuth()
   async getArchiveTasksByHouse(
     @GetCurrentUser() user: User,
-    @GetSearchParams() searchParams: SearchParams,
+    @GetSearchParams() searchParams: TaskSearchParams,
   ) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
@@ -122,7 +122,7 @@ export class TaskController {
   @ApiBearerAuth()
   async getTasksByAnimalId(
     @Param('id') id: string,
-    @GetSearchParams() searchParams: SearchParams,
+    @GetSearchParams() searchParams: TaskSearchParams,
   ) {
     const tasks = await this.service.findTasksByAnimalId(id, searchParams);
     return tasks.map((task) => this.service.formatTask(task));
