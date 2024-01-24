@@ -263,7 +263,7 @@ export class TaskService {
       } = body;
 
       let recurrenceToUpdate = null;
-      if (body.recurrence) {
+      if (body.recurrence.type) {
         if (task.recurrence) {
           recurrenceToUpdate = await this.recurrenceService.updateRecurrence(
             body.recurrence,
@@ -275,6 +275,8 @@ export class TaskService {
             task,
           );
         }
+      } else if (task.recurrence) {
+        await this.recurrenceService.deleteRecurrence(task.recurrence.id);
       }
 
       const [animals, users, findPicture] = await Promise.all([
@@ -295,7 +297,7 @@ export class TaskService {
 
       const taskCrypted = encryptObject(taskToCrypt);
       const updatedTaskData = {
-        recurrence: recurrenceToUpdate ?? task.recurrence,
+        recurrence: recurrenceToUpdate,
         date: date ? new Date(date) : task.date,
         title: title ?? task.title,
         users: userIds ? users : task.users,
