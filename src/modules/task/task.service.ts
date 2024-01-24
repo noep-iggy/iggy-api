@@ -21,6 +21,7 @@ import { RecurrenceService } from '../recurrence/recurrence.service';
 import { UserService } from '../user/user.service';
 import { Task } from './task.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { getDateConditions } from '@/utils/date';
 
 @Injectable()
 export class TaskService {
@@ -51,18 +52,33 @@ export class TaskService {
 
   searchConditions(searchParams?: TaskSearchParams): FindManyOptions<Task> {
     if (!searchParams) return { relations: ['users', 'animals', 'recurrence'] };
+
     const order = {
       [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
     };
+
+    const where: any = {
+      title: Raw(
+        (alias) =>
+          `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
+      ),
+      status: Raw(
+        (alias) =>
+          `LOWER(${alias}) Like '%${searchParams.status?.toLocaleLowerCase()}%'`,
+      ),
+      ...getDateConditions(searchParams),
+      isArchived: searchParams.isArchived,
+    };
+
+    // Ajouter la condition pour animalId
+    if (searchParams.animalId) {
+      where.animals = {
+        id: searchParams.animalId,
+      };
+    }
+
     return {
-      where: {
-        title: Raw(
-          (alias) =>
-            `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
-        ),
-        date: searchParams.date ? Raw((alias) => `date(${alias})`) : undefined,
-        status: searchParams.status,
-      },
+      where,
       relations: ['users', 'animals', 'recurrence'],
       order: {
         ...order,
@@ -159,8 +175,8 @@ export class TaskService {
   ): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
-        ...this.searchConditions(searchParams),
         where: { users: { house: { id: houseId } }, isArchived: false },
+        ...this.searchConditions(searchParams),
       });
       return tasks;
     } catch (error) {

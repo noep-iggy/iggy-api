@@ -9,8 +9,10 @@ export interface SearchParams {
 }
 
 export interface TaskSearchParams extends SearchParams {
-  date?: 'today' | 'week' | 'month';
+  date?: 'today' | 'tomorrow' | 'week' | 'month';
   status?: TaskStatusEnum;
+  isArchived?: boolean;
+  animalId?: string;
 }
 
 export interface ApiSearchResponse<T> {
