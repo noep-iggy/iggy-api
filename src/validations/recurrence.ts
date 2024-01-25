@@ -33,6 +33,7 @@ const update: yup.ObjectSchema<UpdateRecurrenceApi> = yup.object({
       Object.values(TaskRecurrenceEnum),
       errorMessage.fields('type').NOT_VALID,
     )
+    .nullable()
     .optional()
     .default(undefined),
 });
