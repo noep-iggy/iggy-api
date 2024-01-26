@@ -1,4 +1,4 @@
-import { TaskSearchParams } from '@/types';
+import { TaskPeriodEnum, TaskSearchParams } from '@/types';
 import { Between } from 'typeorm';
 
 export const getDateConditions = (searchParams: TaskSearchParams) => {
@@ -19,25 +19,31 @@ export const getDateConditions = (searchParams: TaskSearchParams) => {
   };
 
   switch (searchParams.date) {
-    case 'today':
+    case TaskPeriodEnum.YESTERDAY:
+      const yesterdayStart = startOfDay(new Date());
+      yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+      const yesterdayEnd = endOfDay(new Date(yesterdayStart));
+      return { date: Between(yesterdayStart, yesterdayEnd) };
+
+    case TaskPeriodEnum.TODAY:
       const todayStart = startOfDay(new Date());
       const todayEnd = endOfDay(new Date());
       return { date: Between(todayStart, todayEnd) };
 
-    case 'tomorrow':
+    case TaskPeriodEnum.TOMORROW:
       const tomorrowStart = startOfDay(new Date());
       tomorrowStart.setDate(tomorrowStart.getDate() + 1);
       const tomorrowEnd = endOfDay(new Date(tomorrowStart));
       return { date: Between(tomorrowStart, tomorrowEnd) };
 
-    case 'week':
+    case TaskPeriodEnum.WEEK:
       const startOfWeek = startOfDay(new Date());
       startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
       const endOfWeek = endOfDay(new Date());
       endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay()));
       return { date: Between(startOfWeek, endOfWeek) };
 
-    case 'month':
+    case TaskPeriodEnum.MONTH:
       const startOfMonth = startOfDay(new Date());
       startOfMonth.setDate(1);
       const endOfMonth = endOfDay(new Date(startOfMonth));

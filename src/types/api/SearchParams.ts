@@ -9,7 +9,7 @@ export interface SearchParams {
 }
 
 export interface TaskSearchParams extends SearchParams {
-  date?: 'today' | 'tomorrow' | 'week' | 'month';
+  date?: TaskPeriodEnum;
   status?: TaskStatusEnum;
   isArchived?: boolean;
   animalId?: string;
@@ -19,4 +19,12 @@ export interface ApiSearchResponse<T> {
   items: T[];
   total: number;
   page: number;
+}
+
+export enum TaskPeriodEnum {
+  TODAY = 'TODAY',
+  TOMORROW = 'TOMORROW',
+  WEEK = 'WEEK',
+  MONTH = 'MONTH',
+  YESTERDAY = 'YESTERDAY',
 }

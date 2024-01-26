@@ -70,7 +70,6 @@ export class TaskService {
       isArchived: searchParams.isArchived,
     };
 
-    // Ajouter la condition pour animalId
     if (searchParams.animalId) {
       where.animals = {
         id: searchParams.animalId,

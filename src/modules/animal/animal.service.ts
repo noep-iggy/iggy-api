@@ -19,6 +19,7 @@ import { errorMessage } from '@/errors';
 import { User } from '../user/user.entity';
 import { resolverAnimalStatus } from '@/utils/animal';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TaskService } from '../task/task.service';
 
 @Injectable()
 export class AnimalService {
@@ -26,6 +27,8 @@ export class AnimalService {
     @InjectRepository(Animal) private animalRepository: Repository<Animal>,
     @Inject(forwardRef(() => HouseService))
     private readonly houseService: HouseService,
+    @Inject(forwardRef(() => TaskService))
+    private readonly taskService: TaskService,
   ) {}
 
   formatAnimal(animalCrypted: Animal): AnimalDto {
@@ -155,6 +158,12 @@ export class AnimalService {
 
   async deleteAnimal(id: string): Promise<void> {
     try {
+      const tasks = await this.taskService.findTasksByAnimalId(id);
+      await Promise.all(
+        tasks.map(async (task) => {
+          await this.taskService.deleteTask(task.id);
+        }),
+      );
       await this.animalRepository.delete({ id });
     } catch (error) {
       console.log(error);
