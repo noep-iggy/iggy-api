@@ -161,14 +161,6 @@ export class UserService {
       if (!user)
         throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
 
-      if (body.firstName && user.house) {
-        const possibleUser = await this.houseService.findUserByNameInHouse(
-          body.firstName,
-          user.house.id,
-        );
-        if (possibleUser)
-          throw new BadRequestException(errorMessage.api('user').EXIST);
-      }
       const profilePictureMedia =
         body.profilePicture &&
         (await this.mediaService.getMediaById(body.profilePicture));

@@ -39,6 +39,17 @@ export class UserController {
     return this.service.formatUser({ ...user, tasks });
   }
 
+  @Get(':id')
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getUserById(@Param('id') id: string): Promise<UserDto> {
+    const user = await this.service.getUser(id);
+    if (!user)
+      throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
+    return this.service.formatUser(user);
+  }
+
   @Get('me/tasks')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
