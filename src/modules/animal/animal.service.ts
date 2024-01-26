@@ -115,11 +115,16 @@ export class AnimalService {
   async updateAnimal(body: UpdateAnimalApi, id: string): Promise<Animal> {
     try {
       const { bornDate, name, status, ...animal } = body;
+      const animalToUpdate = await this.animalRepository.findOneBy({ id });
       const encrypBody = encryptObject(animal);
-      await this.animalRepository.update(
-        { id },
-        { ...encrypBody, bornDate, name, status, updatedAt: new Date() },
-      );
+      await this.animalRepository.save({
+        ...animalToUpdate,
+        ...encrypBody,
+        name: name,
+        bornDate: new Date(bornDate),
+        status: status,
+        updatedAt: new Date(),
+      });
       return await this.animalRepository.findOneBy({ id });
     } catch (error) {
       console.log(error);
