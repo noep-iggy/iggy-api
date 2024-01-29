@@ -8,6 +8,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
@@ -172,5 +173,15 @@ export class HouseController {
         );
       })
       .map((affiliate) => this.affiliateService.formatAffiliate(affiliate));
+  }
+
+  @Delete()
+  @HttpCode(204)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async deleteHouse(@GetCurrentUser() user: User) {
+    if (!user.house)
+      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
+    await this.service.deleteHouse(user.house.id);
   }
 }
