@@ -1,4 +1,4 @@
-import { TaskStatusEnum } from '../dto';
+import { AnimalTypeEnum, TaskStatusEnum } from '../dto';
 
 export interface SearchParams {
   search?: string;
@@ -6,6 +6,13 @@ export interface SearchParams {
   page?: number;
   orderBy?: string;
   orderType?: 'ASC' | 'DESC';
+}
+
+export interface AffiliateSearchParams extends SearchParams {
+  animalTypes?: AnimalTypeEnum[];
+  brands?: string[];
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export interface TaskSearchParams extends SearchParams {

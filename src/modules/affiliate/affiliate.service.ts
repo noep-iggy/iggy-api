@@ -1,9 +1,9 @@
 import { errorMessage } from '@/errors';
 import {
   AffiliateDto,
-  AnimalTypeEnum,
+  AffiliateSearchParams,
+  ApiSearchResponse,
   CreateAffiliateApi,
-  SearchParams,
   UpdateAffiliateApi,
 } from '@/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -28,29 +28,85 @@ export class AffiliateService {
     };
   }
 
-  searchConditions(searchParams?: SearchParams): FindManyOptions<Affiliate> {
-    if (!searchParams) return;
+  searchConditions(
+    searchParams?: AffiliateSearchParams,
+  ): FindManyOptions<Affiliate> {
+    if (!searchParams) return {};
+
+    const where = {
+      title: Raw(
+        (alias) =>
+          `LOWER(${alias}) LIKE '%${searchParams.search.toLowerCase()}%'`,
+      ),
+      animals: searchParams.animalTypes
+        ? Raw((alias) => {
+            const animalConditions = searchParams.animalTypes
+              .map((animal) => `${alias} LIKE '%${animal}%'`)
+              .join(' OR ');
+            return `(${animalConditions})`;
+          })
+        : undefined,
+      brand: searchParams.brands
+        ? Raw((alias) => {
+            const brandConditions = searchParams.brands
+              .map((brand) => `${alias} LIKE '%${brand}%'`)
+              .join(' OR ');
+            return `(${brandConditions})`;
+          })
+        : undefined,
+      discountPrice: Raw(
+        (alias) =>
+          `${alias} BETWEEN ${searchParams.minPrice ?? 0} AND ${
+            searchParams.maxPrice ?? 999999
+          }`,
+      ),
+    };
+
+    if (searchParams.animalTypes && searchParams.animalTypes.length > 0) {
+      where.animals = Raw((alias) => {
+        const animalConditions = searchParams.animalTypes
+          .map((animal) => `${alias} LIKE '%${animal}%'`)
+          .join(' OR ');
+        return `(${animalConditions})`;
+      });
+    }
+
     const order = {
       [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
     };
+
     return {
-      where: {
-        title: Raw(
-          (alias) =>
-            `LOWER(${alias}) Like '%${searchParams.search?.toLowerCase()}%'`,
-        ),
-      },
+      where,
       order,
+      relations: ['image'],
       skip: searchParams.page * searchParams.pageSize,
       take: searchParams.pageSize,
     };
   }
 
-  async getAffiliates(searchParams: SearchParams): Promise<Affiliate[]> {
+  async getAffiliates(
+    searchParams?: AffiliateSearchParams,
+  ): Promise<ApiSearchResponse<Affiliate>> {
     try {
-      return await this.affiliateRepository.find(
+      const [affiliates, total] = await this.affiliateRepository.findAndCount(
         this.searchConditions(searchParams),
       );
+      return {
+        items: affiliates,
+        total,
+        page: searchParams.page,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(errorMessage.api('affiliate').NOT_FOUND);
+    }
+  }
+
+  async getBrandsOfAffiliates(): Promise<string[]> {
+    try {
+      const affiliates = await this.affiliateRepository.find();
+      const brands = affiliates.map((affiliate) => affiliate.brand);
+      return [...new Set(brands)];
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('affiliate').NOT_FOUND);
@@ -66,22 +122,6 @@ export class AffiliateService {
         throw new BadRequestException(errorMessage.api('affiliate').NOT_FOUND);
       }
       return affiliate;
-    } catch (error) {
-      console.log(error);
-      throw new BadRequestException(errorMessage.api('affiliate').NOT_FOUND);
-    }
-  }
-
-  async getAffiliateByAnimalType(
-    animalType: AnimalTypeEnum,
-    searchParams?: SearchParams,
-  ): Promise<Affiliate[]> {
-    try {
-      const affilatesAll = await this.getAffiliates(searchParams);
-      const affilates = affilatesAll.filter((affiliate) =>
-        affiliate.animals.includes(animalType),
-      );
-      return affilates;
     } catch (error) {
       console.log(error);
       throw new BadRequestException(errorMessage.api('affiliate').NOT_FOUND);

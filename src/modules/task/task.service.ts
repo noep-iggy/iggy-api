@@ -57,6 +57,8 @@ export class TaskService {
       [searchParams.orderBy ?? 'createdAt']: searchParams.orderType ?? 'DESC',
     };
 
+    searchParams.status = searchParams.status ?? TaskStatusEnum.TODO;
+
     const where: any = {
       title: Raw(
         (alias) =>

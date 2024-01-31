@@ -2,7 +2,6 @@ import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
 import { errorMessage } from '@/errors';
 import { BillingPlanTypeEnum, CreateHouseApi, UpdateHouseApi } from '@/types';
-import { decryptObject } from '@/utils';
 import { houseValidation } from '@/validations';
 import {
   BadRequestException,
@@ -49,7 +48,6 @@ export class HouseController {
     @GetCurrentUser() user: User,
   ) {
     try {
-      console.log('[D] house.controller', user);
       await houseValidation.create.validate(body, {
         abortEarly: false,
       });
@@ -140,39 +138,6 @@ export class HouseController {
       user.house.id,
     );
     return animals.map((animal) => this.animalService.formatAnimal(animal));
-  }
-
-  @Get('affiliates')
-  @HttpCode(200)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  async getAffiliates(@GetCurrentUser() user: User) {
-    if (!user.house)
-      throw new BadRequestException(errorMessage.api('house').NOT_FOUND);
-    const animals = await this.animalService.findAnimalsByHouseId(
-      user.house.id,
-    );
-
-    const affiliates = await Promise.all(
-      animals.map(async (animal) => {
-        const animalDecrypted = decryptObject(animal);
-        return await this.affiliateService.getAffiliateByAnimalType(
-          animalDecrypted.type,
-        );
-      }),
-    );
-
-    return affiliates
-      .flat()
-      .filter((affiliate, index, self) => {
-        return (
-          index ===
-          self.findIndex(
-            (t) => t.id === affiliate.id && t.title === affiliate.title,
-          )
-        );
-      })
-      .map((affiliate) => this.affiliateService.formatAffiliate(affiliate));
   }
 
   @Delete()

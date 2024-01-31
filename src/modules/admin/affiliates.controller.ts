@@ -36,7 +36,7 @@ export class AdminAffiliatesController {
       if (!user.isAdmin)
         throw new BadRequestException(errorMessage.api('admin').NOT_ADMIN);
       const affiliates = await this.service.getAffiliates(searchParams);
-      return affiliates.map((affiliate) =>
+      return affiliates.items.map((affiliate) =>
         this.service.formatAffiliate(affiliate),
       );
     } catch (e) {

@@ -42,7 +42,7 @@ export class TaskController {
   @ApiBearerAuth()
   async getTasks(
     @GetCurrentUser() user: User,
-    @GetSearchParams() searchParams: TaskSearchParams,
+    @GetSearchParams<TaskSearchParams>() searchParams: TaskSearchParams,
   ) {
     if (!user.house)
       throw new BadRequestException(errorMessage.api('house').NOT_FOUND);

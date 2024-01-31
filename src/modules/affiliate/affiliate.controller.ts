@@ -1,7 +1,10 @@
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { GetSearchParams } from '@/decorators/get-search-params.decorator';
-import { errorMessage } from '@/errors';
-import { AnimalTypeEnum, SearchParams } from '@/types';
+import {
+  AffiliateDto,
+  AffiliateSearchParams,
+  ApiSearchResponse,
+} from '@/types';
 import {
   BadRequestException,
   Controller,
@@ -30,26 +33,35 @@ export class AffiliateController {
     }
   }
 
-  @Get('type/:animalType')
+  @Get('search/brands')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
   @ApiBearerAuth()
-  async getAffiliateByAnimalType(
-    @Param('animalType') animalType: AnimalTypeEnum,
-    @GetSearchParams() searchParams: SearchParams,
-  ) {
+  async getBrandsOfAffiliates() {
     try {
-      if (AnimalTypeEnum[animalType] === undefined)
-        throw new BadRequestException(errorMessage.api('affiliates').NOT_FOUND);
-      const affiliates = await this.service.getAffiliateByAnimalType(
-        animalType,
-        searchParams,
-      );
-      return affiliates.map((affiliate) =>
-        this.service.formatAffiliate(affiliate),
-      );
+      return await this.service.getBrandsOfAffiliates();
     } catch (e) {
-      console.log(e);
+      throw new BadRequestException(e);
+    }
+  }
+
+  @Get()
+  @HttpCode(200)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  async getAffiliates(
+    @GetSearchParams<AffiliateSearchParams>()
+    searchParams: AffiliateSearchParams,
+  ): Promise<ApiSearchResponse<AffiliateDto>> {
+    try {
+      const affiliates = await this.service.getAffiliates(searchParams);
+      return {
+        ...affiliates,
+        items: affiliates.items.map((affiliate) =>
+          this.service.formatAffiliate(affiliate),
+        ),
+      };
+    } catch (e) {
       throw new BadRequestException(e);
     }
   }
