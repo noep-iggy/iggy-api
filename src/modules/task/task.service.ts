@@ -50,7 +50,10 @@ export class TaskService {
     };
   }
 
-  searchConditions(searchParams?: TaskSearchParams): FindManyOptions<Task> {
+  searchConditions(
+    searchParams?: TaskSearchParams,
+    houseId?: string,
+  ): FindManyOptions<Task> {
     if (!searchParams) return { relations: ['users', 'animals', 'recurrence'] };
 
     const order = {
@@ -68,6 +71,7 @@ export class TaskService {
         (alias) =>
           `LOWER(${alias}) Like '%${searchParams.status?.toLocaleLowerCase()}%'`,
       ),
+
       ...getDateConditions(searchParams),
       isArchived: searchParams.isArchived,
     };
@@ -75,6 +79,14 @@ export class TaskService {
     if (searchParams.animalId) {
       where.animals = {
         id: searchParams.animalId,
+      };
+    }
+
+    if (houseId) {
+      where.users = {
+        house: {
+          id: houseId,
+        },
       };
     }
 
@@ -176,8 +188,7 @@ export class TaskService {
   ): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
-        where: { users: { house: { id: houseId } }, isArchived: false },
-        ...this.searchConditions(searchParams),
+        ...this.searchConditions(searchParams, houseId),
       });
       return tasks;
     } catch (error) {
