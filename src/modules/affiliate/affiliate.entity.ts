@@ -28,9 +28,9 @@ export class Affiliate extends BaseEntity {
   @Column()
   brand: string;
 
-  @Column()
+  @Column('decimal', { precision: 10, scale: 2 })
   basePrice: number;
 
-  @Column()
+  @Column('decimal', { precision: 10, scale: 2 })
   discountPrice: number;
 }
