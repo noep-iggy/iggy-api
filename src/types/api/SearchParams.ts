@@ -20,6 +20,7 @@ export interface TaskSearchParams extends SearchParams {
   status?: TaskStatusEnum;
   isArchived?: boolean;
   animalId?: string;
+  userId?: string;
 }
 
 export interface ApiSearchResponse<T> {

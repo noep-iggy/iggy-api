@@ -82,6 +82,12 @@ export class TaskService {
       };
     }
 
+    if (searchParams.userId) {
+      where.users = {
+        id: searchParams.userId,
+      };
+    }
+
     if (houseId) {
       where.users = {
         house: {
