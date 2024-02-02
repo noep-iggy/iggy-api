@@ -71,33 +71,20 @@ export class TaskService {
         (alias) =>
           `LOWER(${alias}) Like '%${searchParams.status?.toLocaleLowerCase()}%'`,
       ),
-
+      animals: {
+        id: searchParams.animalId,
+      },
+      users: {
+        id: searchParams.userId,
+        house: {
+          id: houseId,
+        },
+      },
       ...getDateConditions(searchParams),
       isArchived: searchParams.isArchived,
     };
 
-    if (searchParams.animalId) {
-      where.animals = {
-        id: searchParams.animalId,
-      };
-    }
-
-    if (searchParams.userId) {
-      where.users = {
-        id: searchParams.userId,
-      };
-    }
-
-    if (houseId) {
-      where.users = {
-        house: {
-          id: houseId,
-        },
-      };
-    }
-
     return {
-      where,
       relations: ['users', 'animals', 'recurrence'],
       order: {
         ...order,
@@ -111,6 +98,7 @@ export class TaskService {
           type: searchParams.orderType ?? 'DESC',
         },
       },
+      where,
       skip: searchParams.page * searchParams.pageSize,
       take: searchParams.pageSize,
     };
@@ -193,9 +181,10 @@ export class TaskService {
     searchParams?: TaskSearchParams,
   ): Promise<Task[]> {
     try {
-      const tasks = await this.taskRepository.find({
-        ...this.searchConditions(searchParams, houseId),
-      });
+      const tasks = await this.taskRepository.find(
+        this.searchConditions(searchParams, houseId),
+      );
+
       return tasks;
     } catch (error) {
       console.log(error);
