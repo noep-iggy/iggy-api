@@ -1,13 +1,7 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  RequestMethod,
-  forwardRef,
-} from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BillingPlanService } from './billing-plan.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
-import { AuthMiddleware } from '../auth/auth.middleware';
 import { BillingPlan } from './billing-plan.entity';
 import { UserModule } from '../user/user.module';
 import { HouseModule } from '../house/house.module';
@@ -24,13 +18,4 @@ import { BillingPlanController } from './billing-plan.controller';
   controllers: [BillingPlanController],
   exports: [BillingPlanService],
 })
-export class BillingPlanModule {
-  public configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthMiddleware)
-      .forRoutes(
-        { path: '/billing-plans', method: RequestMethod.ALL },
-        { path: '/billing-plans/*', method: RequestMethod.ALL },
-      );
-  }
-}
+export class BillingPlanModule {}

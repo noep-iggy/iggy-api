@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { BillingPlanService } from '../billing-plan/billing-plan.service';
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
 import { BillingPlanTypeEnum } from '@/types';
 import { errorMessage } from '@/errors';
 
@@ -24,7 +23,6 @@ export class BillingPlanController {
   @Get()
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
   async getBillingPlans() {
     try {
       const billingPlans = await this.service.getBillingPlans();
@@ -39,7 +37,6 @@ export class BillingPlanController {
   @Get(':type')
   @HttpCode(200)
   @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
   async getBillingPlanByType(@Param('type') type: BillingPlanTypeEnum) {
     try {
       if (BillingPlanTypeEnum[type] === undefined)
