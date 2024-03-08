@@ -10,7 +10,7 @@ const password = yup
   .matches(/[A-Z]/, errorMessage.fields('password').NO_UPPERCASE)
   .matches(/[0-9]/, errorMessage.fields('password').NO_DIGIT)
   .matches(
-    /[!@#$%^&*€\-,.+'"=]/,
+    /[!@#$%^&*€\-,.+'"=?]/,
     errorMessage.fields('password').NO_SPECIAL_CHARACTER,
   )
   .matches(/^[^\s]*$/, errorMessage.fields('password').HAS_SPACES);
