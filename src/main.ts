@@ -12,6 +12,10 @@ async function bootstrap() {
     'http://10.135.129.143:8081',
     'https://backoffice.cocon-animal.fr',
     'https://api.cocon-animal.fr',
+    'https://www.cocon-animal.fr',
+    'https://cocon-animal.fr',
+    'https://www.api.cocon-animal.fr',
+    'https://www.backoffice.cocon-animal.fr',
   ];
   app.enableCors({
     origin: function (origin, callback) {
@@ -21,6 +25,10 @@ async function bootstrap() {
         callback(new Error('Not allowed by CORS'));
       }
     },
+    allowedHeaders:
+      'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe',
+    methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
+    credentials: true,
   });
   // app.enableCors({
   //   origin: '*',
