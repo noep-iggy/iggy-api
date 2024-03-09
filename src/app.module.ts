@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -19,6 +19,7 @@ import { MediaModule } from './modules/media/media.module';
 import { RecurrenceModule } from './modules/recurrence/recurrence.module';
 import { TaskModule } from './modules/task/task.module';
 import { UserModule } from './modules/user/user.module';
+import { TimeLoggerMiddleware } from './decorators/time-logger.middleware';
 
 @Module({
   imports: [
@@ -56,4 +57,8 @@ import { UserModule } from './modules/user/user.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(TimeLoggerMiddleware).forRoutes('*');
+  }
+}
